@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PregaçãoFácil - MVP</title>
+    <link rel="icon" href="data:image/svg+xml,<svg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'><path d='M4,2v26h11V2H4z M13,26H6V4h7V26z' fill='%230284c7'/><path d='M17,2v26h11V2H17z M26,26h-7V4h7V26z' fill='%230284c7'/><path d='M20.5,8c-2.48,0-4.5,2.02-4.5,4.5c0,1.43,0.67,2.7,1.7,3.58V18h5.6v-1.92c1.03-0.88,1.7-2.15,1.7-3.58 C25,10.02,22.98,8,20.5,8z M21.5,19h-2v1h2V19z' fill='%23fbbf24'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -289,7 +290,9 @@
             'Solidão': ['A presença constante de Deus', 'Encontrando família na igreja', 'Superando o sentimento de isolamento', 'A solidão como lugar de encontro com Deus']
         };
 
-        const API_KEY = "AIzaSyBg7JKdImrnowHk9FDCvVU7omfXzxsJN8w"; 
+        // Para uso local no VSC, insira sua chave de API aqui.
+        // Para o ambiente de desenvolvimento, esta linha é preenchida automaticamente.
+        const API_KEY = ""; 
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
         
         async function callGeminiAPI(prompt) {
@@ -438,10 +441,10 @@ O resultado deve ser em HTML, usando a seguinte estrutura. As instruções entre
 <p>[Crie um título que seja ao mesmo tempo teologicamente rico e convidativo.]</p>
 
 <h3><strong>2. TEXTO BASE SUGERIDO</strong></h3>
-<p>[Sugira uma passagem central (texto âncora) que fundamente toda a mensagem.]</p>
+<p>[Sugira uma passagem central (texto âncora) que fundamente toda a mensagem. **Inclua a referência E o texto completo da passagem.**]</p>
 
 <h3><strong>3. VERSÍCULOS DE APOIO SUGERIDOS</strong></h3>
-<ul><li>[Liste 3 a 5 versículos que complementem e reforcem o texto base.]</li></ul>
+<ul><li>[Liste 3 a 5 versículos que complementem e reforcem o texto base. **Para cada um, inclua a referência E o texto completo do versículo.**]</li></ul>
 
 <h3><strong>4. ESBOÇO DA PREGAÇÃO</strong></h3>
 <h4><i><b>Introdução:</b></i></h4>
@@ -619,12 +622,37 @@ Apresente a ilustração de forma narrativa e pronta para ser contada.`;
             return `<div class="bg-blue-50 p-4 rounded-lg mb-6"><p class="font-semibold text-blue-800">Opções Selecionadas:</p><p class="text-gray-600">${selectionParts.join(' > ')}.</p></div>`;
         }
         
-        function stripHtml(html) {
-           let doc = new DOMParser().parseFromString(html, 'text/html');
-           return doc.body.textContent || "";
+        function htmlToPlainText(htmlString) {
+            if (!htmlString) return "";
+
+            let text = htmlString;
+
+            // Replace <br> with newline
+            text = text.replace(/<br\s*\/?>/gi, '\n');
+            
+            // Add double newline after paragraphs and headings
+            text = text.replace(/<\/p>|<\/h3>|<\/h4>/gi, '\n\n');
+            
+            // Handle lists
+            text = text.replace(/<li>/gi, '\n- ');
+            text = text.replace(/<\/ul>|<\/ol>/gi, '\n');
+
+            // Strip all other tags
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = text;
+            let plainText = tempDiv.textContent || tempDiv.innerText || "";
+
+            // Clean up: remove leading/trailing whitespace on lines, and reduce multiple newlines to max 2
+            return plainText
+                .split('\n')
+                .map(line => line.trim())
+                .join('\n')
+                .replace(/\n{3,}/g, '\n\n')
+                .trim();
         }
 
-        function copyToClipboard(text, buttonEl) {
+        function copyToClipboard(htmlToCopy, buttonEl) {
+            const text = htmlToPlainText(htmlToCopy);
             if (!text) return;
             const originalText = buttonEl.innerHTML;
             
@@ -664,13 +692,13 @@ Apresente a ilustração de forma narrativa e pronta para ser contada.`;
             // Event listener para o botão de copiar esboço
             copyEsbocoBtn.addEventListener('click', (e) => {
                 const esbocoContent = buildSelectionSummary() + sermonData.esboco;
-                copyToClipboard(stripHtml(esbocoContent), e.currentTarget);
+                copyToClipboard(esbocoContent, e.currentTarget);
             });
 
             // Event listener para o botão de copiar do modal
             copyModalBtn.addEventListener('click', (e) => {
                 const modalContent = document.getElementById('modal-content').innerHTML;
-                copyToClipboard(stripHtml(modalContent), e.currentTarget);
+                copyToClipboard(modalContent, e.currentTarget);
             });
 
             document.getElementById('main-content').addEventListener('click', (e) => {
