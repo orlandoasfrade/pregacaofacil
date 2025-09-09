@@ -516,7 +516,7 @@ O resultado deve ser em HTML, usando a seguinte estrutura. As instruções entre
 <h3><strong>A GRANDE VERDADE (DOUTRINA)</strong></h3>
 <p>[Conclua explicando qual grande verdade sobre Deus, Jesus ou a vida cristã este texto nos ensina de forma clara.]</p>
 
-Formate a resposta de forma didática, usando os títulos em HTML (h3 e p com strong) como especificado.`;
+Formate a resposta de forma didática, usando os títulos em HTML (h3 com strong) e parágrafos simples (p) como especificado.`;
 
             } else if (type === 'illustrate') {
                 modalTitle = 'Nova Ilustração';
@@ -536,6 +536,17 @@ Apresente a ilustração de forma narrativa e pronta para ser contada. **É cruc
             try {
                 let contentText = await callGeminiAPI(prompt);
                  if (type === 'deepen') {
+                    // Limpeza final para garantir que parágrafos não fiquem em negrito
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = contentText;
+                    tempDiv.querySelectorAll('p').forEach(p => {
+                        p.querySelectorAll('strong').forEach(strongTag => {
+                            // Substitui a tag 'strong' pelo seu conteúdo, removendo o negrito.
+                            strongTag.outerHTML = strongTag.innerHTML; 
+                        });
+                    });
+                    contentText = tempDiv.innerHTML;
+
                     sermonData.aprofundamento = contentText;
                     document.getElementById('deepen-btn').querySelector('span').textContent = '✅ Aprofundamento Gerado';
                     document.getElementById('deepen-btn').classList.replace('bg-purple-600', 'bg-green-600');
@@ -592,7 +603,7 @@ Apresente a ilustração de forma narrativa e pronta para ser contada. **É cruc
 
         function handleError(error) {
             console.error('Error:', error);
-            showLoading(false); 
+            showLoading(false);
             displayMainError(error.message || "Ocorreu um erro desconhecido. Verifique o console para mais detalhes.");
         }
 
@@ -753,5 +764,11 @@ Apresente a ilustração de forma narrativa e pronta para ser contada. **É cruc
     </script>
 </body>
 </html>
+
+
+
+
+
+
 
 
