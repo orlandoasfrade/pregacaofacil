@@ -517,16 +517,16 @@ O resultado deve ser em HTML, usando a seguinte estrutura. As instruções entre
 
 **Estrutura da Análise:**
 
-<h3><strong>O Coração da Passagem</strong></h3>
+<h3><strong>O CORAÇÃO DA PASSAGEM</strong></h3>
 <p>[Comece explicando, em poucas frases, qual é a ideia central e mais importante do texto base.]</p>
 
-<h3><strong>Entendendo o Contexto</strong></h3>
+<h3><strong>ENTENDENDO O CONTEXTO</strong></h3>
 <p>[De forma simples, explique o que estava acontecendo na época em que o texto foi escrito para ajudar a entender a intenção do autor.]</p>
 
-<h3><strong>Palavras que Iluminam</strong></h3>
+<h3><strong>PALAVRAS QUE ILUMINAM</strong></h3>
 <p>[Escolha 1 ou 2 palavras importantes e explique seu significado prático, sem uma análise linguística profunda.]</p>
 
-<h3><strong>A Grande Verdade (Doutrina)</strong></h3>
+<h3><strong>A GRANDE VERDADE (DOUTRINA)</strong></h3>
 <p>[Conclua explicando qual grande verdade sobre Deus, Jesus ou a vida cristã este texto nos ensina de forma clara.]</p>
 
 Formate a resposta de forma didática, usando os títulos em HTML (h3 e p com strong) como especificado.`;
@@ -543,16 +543,24 @@ b) Ser original e evitar clichês evangélicos comuns (ex: "o cristão é como u
 c) Evocar uma resposta emocional apropriada (reflexão, convicção, esperança, etc.).
 d) Tornar a mensagem principal do sermão inesquecível.
 
-Apresente a ilustração de forma narrativa e pronta para ser contada.`;
+Apresente a ilustração de forma narrativa e pronta para ser contada. **É crucial que cada parágrafo da história esteja envolvido individualmente em suas próprias tags HTML &lt;p&gt; e &lt;/p&gt; para garantir o espaçamento correto entre eles.**`;
             }
 
             try {
-                const contentText = await callGeminiAPI(prompt);
+                let contentText = await callGeminiAPI(prompt);
                  if (type === 'deepen') {
                     sermonData.aprofundamento = contentText;
                     document.getElementById('deepen-btn').querySelector('span').textContent = '✅ Aprofundamento Gerado';
                     document.getElementById('deepen-btn').classList.replace('bg-purple-600', 'bg-green-600');
                 } else if (type === 'illustrate') {
+                    // Garante a formatação em parágrafos, mesmo que a IA retorne texto simples.
+                    if (!contentText.trim().includes('<p>')) {
+                        contentText = contentText
+                            .trim()
+                            .split(/\n\s*\n/) // Divide por parágrafos (uma ou mais linhas em branco)
+                            .map(p => `<p>${p.trim()}</p>`)
+                            .join('');
+                    }
                     sermonData.ilustracao = contentText;
                     document.getElementById('illustrate-btn').querySelector('span').textContent = '✅ Ilustração Gerada';
                     document.getElementById('illustrate-btn').classList.replace('bg-teal-500', 'bg-green-600');
@@ -571,7 +579,7 @@ Apresente a ilustração de forma narrativa e pronta para ser contada.`;
 
         function showModal(title, content) {
             document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-content').innerHTML = content.replace(/\n/g, '<br>');
+            document.getElementById('modal-content').innerHTML = content;
             document.getElementById('modal-overlay').classList.add('visible');
         }
 
@@ -638,28 +646,27 @@ Apresente a ilustração de forma narrativa e pronta para ser contada.`;
 
             let text = htmlString;
 
-            // Replace <br> with newline
+            // Adiciona duas quebras de linha para criar espaçamento após os blocos
+            text = text.replace(/<\/p>|<\/h3>|<\/h4>|<\/div>|<\/ul>|<\/ol>/gi, '\n\n');
+            // Adiciona o marcador para itens de lista
+            text = text.replace(/<li>/gi, '- ');
+            // Substitui <br> por uma quebra de linha simples
             text = text.replace(/<br\s*\/?>/gi, '\n');
-            
-            // Add double newline after paragraphs and headings
-            text = text.replace(/<\/p>|<\/h3>|<\/h4>/gi, '\n\n');
-            
-            // Handle lists
-            text = text.replace(/<li>/gi, '\n- ');
-            text = text.replace(/<\/ul>|<\/ol>/gi, '\n');
 
-            // Strip all other tags
+            // Remove todas as tags HTML restantes
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = text;
             let plainText = tempDiv.textContent || tempDiv.innerText || "";
+            
+            // Limpeza final para garantir formatação consistente
+            // Remove espaços em branco no início e no fim de todo o texto
+            plainText = plainText.trim();
+            // Substitui 3 ou mais quebras de linha por exatamente duas (uma linha em branco)
+            plainText = plainText.replace(/(\r\n|\n|\r){3,}/g, "\n\n");
+            // Remove espaços vazios no início de cada linha (importante para listas)
+            plainText = plainText.replace(/^\s+/gm, '');
 
-            // Clean up: remove leading/trailing whitespace on lines, and reduce multiple newlines to max 2
-            return plainText
-                .split('\n')
-                .map(line => line.trim())
-                .join('\n')
-                .replace(/\n{3,}/g, '\n\n')
-                .trim();
+            return plainText;
         }
 
         function copyToClipboard(htmlToCopy, buttonEl) {
@@ -759,4 +766,10 @@ Apresente a ilustração de forma narrativa e pronta para ser contada.`;
     </script>
 </body>
 </html>
+
+
+
+
+
+
 
