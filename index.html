@@ -152,13 +152,14 @@
         </div>
     </div>
     
-    <!-- Scripts Firebase -->
     <script type="module">
+        // ===================================================================================
+        // FIREBASE E AUTENTICAÇÃO
+        // ===================================================================================
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // Suas chaves de configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyD5RiD_NitvmIY5G1X6XBayJBmNnBraWgQ",
             authDomain: "pregacaofacil-app.firebaseapp.com",
@@ -185,37 +186,29 @@
         const logoutBtnApp = document.getElementById('logout-btn-app');
         const logoutBtnSub = document.getElementById('logout-btn-sub');
 
-        // Lógica para alternar entre Login e Cadastro
         showRegisterLink.addEventListener('click', (e) => { e.preventDefault(); loginForm.classList.add('hidden'); registerForm.classList.remove('hidden'); authSubtitle.textContent = 'Crie sua conta para começar'; authError.textContent = ''; });
         showLoginLink.addEventListener('click', (e) => { e.preventDefault(); registerForm.classList.add('hidden'); loginForm.classList.remove('hidden'); authSubtitle.textContent = 'Acesse sua conta para continuar'; authError.textContent = ''; });
 
-        // Lógica de Autenticação e Verificação de Assinatura
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Usuário está logado, agora verifica a assinatura no Firestore
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
-
                 if (userDocSnap.exists() && userDocSnap.data().subscriptionActive === true) {
-                    // Usuário é assinante, mostra o aplicativo principal
                     authView.classList.add('hidden');
                     subscriptionView.classList.add('hidden');
                     appView.classList.remove('hidden');
                 } else {
-                    // Usuário não é assinante (ou o campo não existe), mostra a página de assinatura
                     authView.classList.add('hidden');
                     appView.classList.add('hidden');
                     subscriptionView.classList.remove('hidden');
                 }
             } else {
-                // Usuário não está logado, mostra a tela de login
                 appView.classList.add('hidden');
                 subscriptionView.classList.add('hidden');
                 authView.classList.remove('hidden');
             }
         });
         
-        // Cadastro
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('register-email').value;
@@ -224,20 +217,16 @@
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
-
-                // Cria um documento para o novo usuário no Firestore
                 await setDoc(doc(db, "users", user.uid), {
                     email: user.email,
                     createdAt: new Date(),
-                    subscriptionActive: false // Padrão é não ser assinante
+                    subscriptionActive: false
                 });
-                // onAuthStateChanged vai cuidar de mostrar a tela de assinatura
             } catch (error) {
                 authError.textContent = "Erro ao criar conta: " + error.message;
             }
         });
 
-        // Login
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
@@ -245,24 +234,20 @@
             authError.textContent = '';
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                 // onAuthStateChanged vai cuidar de mostrar a tela correta (app ou assinatura)
             } catch (error) {
                 authError.textContent = "Erro ao entrar: " + error.message;
             }
         });
         
-        // Logout
         const handleLogout = async () => {
              try { await signOut(auth); } catch (error) { console.error("Erro ao sair:", error); }
         };
         logoutBtnApp.addEventListener('click', handleLogout);
         logoutBtnSub.addEventListener('click', handleLogout);
 
-    </script>
-
-    <script>
-        // Lógica do Aplicativo Principal (PregaçãoFácil)
-        // (Todo o código anterior do PregaçãoFácil vem aqui)
+        // ===================================================================================
+        // LÓGICA DO APP PREGAÇÃOFÁCIL
+        // ===================================================================================
         const selections = { purpose: null, celebrationCategory: null, celebration: null, areaCategory: null, area: null, themeCategory: null, theme: null, subTheme: null };
         let sermonData = { esboco: null, aprofundamento: null, ilustracao: null };
         const celebrationData = { 'calendario': { title: 'Calendário Cristão', options: ['Páscoa', 'Natal', 'Pentecostes', 'Ano Novo', 'Domingo de Ramos', 'Sexta-feira Santa'] }, 'vidaIgreja': { title: 'Vida da Igreja', options: ['Aniversário da Igreja', 'Batismos', 'Santa Ceia', 'Apresentação de Crianças', 'Culto de Missões', 'Consagração de Líderes'] }, 'eventosEspeciais': { title: 'Datas e Eventos Especiais', options: ['Dia das Mães', 'Dia dos Pais', 'Dia da Bíblia', 'Ação de Graças', 'Dia do Pastor', 'Casamento', 'Aniversário', 'Formatura', 'Velório'] } };
