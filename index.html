@@ -40,8 +40,6 @@
                 <h1 class="text-3xl font-bold text-blue-600">PregaçãoFácil</h1>
                 <p id="auth-subtitle" class="text-gray-600 mt-2">Acesse sua conta para continuar</p>
             </div>
-
-            <!-- Formulário de Login -->
             <form id="login-form">
                 <div class="mb-4">
                     <label for="login-email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
@@ -52,16 +50,10 @@
                     <input type="password" id="login-password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" required>
                 </div>
                 <div class="flex items-center justify-between">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Entrar
-                    </button>
-                    <a id="show-register-link" class="inline-block align-baseline font-bold text-sm text-blue-600 hover:text-blue-800" href="#">
-                        Criar conta
-                    </a>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Entrar</button>
+                    <a id="show-register-link" class="inline-block align-baseline font-bold text-sm text-blue-600 hover:text-blue-800" href="#">Criar conta</a>
                 </div>
             </form>
-
-            <!-- Formulário de Cadastro -->
             <form id="register-form" class="hidden">
                 <div class="mb-4">
                     <label for="register-email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
@@ -72,16 +64,23 @@
                     <input type="password" id="register-password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" required>
                 </div>
                 <div class="flex items-center justify-between">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Criar Conta
-                    </button>
-                    <a id="show-login-link" class="inline-block align-baseline font-bold text-sm text-blue-600 hover:text-blue-800" href="#">
-                        Já tenho uma conta
-                    </a>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Criar Conta</button>
+                    <a id="show-login-link" class="inline-block align-baseline font-bold text-sm text-blue-600 hover:text-blue-800" href="#">Já tenho uma conta</a>
                 </div>
             </form>
-            
             <p id="auth-error" class="text-red-500 text-xs italic mt-4 text-center"></p>
+        </div>
+    </div>
+
+    <!-- TELA DE ASSINATURA -->
+    <div id="subscription-view" class="min-h-screen flex items-center justify-center hidden">
+        <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg text-center">
+            <h1 class="text-3xl font-bold text-blue-600 mb-4">Acesso Exclusivo</h1>
+            <p class="text-gray-600 mb-8">Para utilizar o PregaçãoFácil, é necessário ter uma assinatura ativa. Escolha um dos nossos planos e libere todo o potencial da ferramenta!</p>
+            <button id="subscribe-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg w-full mb-4">
+                Ver Planos de Assinatura
+            </button>
+            <button id="logout-btn-sub" class="text-sm text-gray-500 hover:text-gray-700">Sair</button>
         </div>
     </div>
 
@@ -110,7 +109,7 @@
                     <h1 class="text-4xl md:text-5xl font-bold text-blue-600">PregaçãoFácil</h1>
                     <p class="text-lg text-gray-600 mt-2">Organize a mensagem. Liberte o pregador.</p>
                 </div>
-                <button id="logout-btn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Sair</button>
+                <button id="logout-btn-app" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Sair</button>
             </header>
             <main id="main-content">
                  <!-- Todo o conteúdo do gerador de sermão (Passo 1, 2, 3, etc.) entra aqui -->
@@ -157,6 +156,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // Suas chaves de configuração do Firebase
         const firebaseConfig = {
@@ -170,44 +170,47 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        // Elementos da UI de Autenticação
+        // Elementos da UI
         const authView = document.getElementById('auth-view');
         const appView = document.getElementById('app-view');
+        const subscriptionView = document.getElementById('subscription-view');
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         const showRegisterLink = document.getElementById('show-register-link');
         const showLoginLink = document.getElementById('show-login-link');
         const authSubtitle = document.getElementById('auth-subtitle');
         const authError = document.getElementById('auth-error');
-        const logoutBtn = document.getElementById('logout-btn');
+        const logoutBtnApp = document.getElementById('logout-btn-app');
+        const logoutBtnSub = document.getElementById('logout-btn-sub');
 
         // Lógica para alternar entre Login e Cadastro
-        showRegisterLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            loginForm.classList.add('hidden');
-            registerForm.classList.remove('hidden');
-            authSubtitle.textContent = 'Crie sua conta para começar';
-            authError.textContent = '';
-        });
+        showRegisterLink.addEventListener('click', (e) => { e.preventDefault(); loginForm.classList.add('hidden'); registerForm.classList.remove('hidden'); authSubtitle.textContent = 'Crie sua conta para começar'; authError.textContent = ''; });
+        showLoginLink.addEventListener('click', (e) => { e.preventDefault(); registerForm.classList.add('hidden'); loginForm.classList.remove('hidden'); authSubtitle.textContent = 'Acesse sua conta para continuar'; authError.textContent = ''; });
 
-        showLoginLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            registerForm.classList.add('hidden');
-            loginForm.classList.remove('hidden');
-            authSubtitle.textContent = 'Acesse sua conta para continuar';
-            authError.textContent = '';
-        });
-
-        // Lógica de Autenticação
-        onAuthStateChanged(auth, (user) => {
+        // Lógica de Autenticação e Verificação de Assinatura
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Usuário está logado
-                authView.classList.add('hidden');
-                appView.classList.remove('hidden');
+                // Usuário está logado, agora verifica a assinatura no Firestore
+                const userDocRef = doc(db, "users", user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+
+                if (userDocSnap.exists() && userDocSnap.data().subscriptionActive === true) {
+                    // Usuário é assinante, mostra o aplicativo principal
+                    authView.classList.add('hidden');
+                    subscriptionView.classList.add('hidden');
+                    appView.classList.remove('hidden');
+                } else {
+                    // Usuário não é assinante (ou o campo não existe), mostra a página de assinatura
+                    authView.classList.add('hidden');
+                    appView.classList.add('hidden');
+                    subscriptionView.classList.remove('hidden');
+                }
             } else {
-                // Usuário não está logado
+                // Usuário não está logado, mostra a tela de login
                 appView.classList.add('hidden');
+                subscriptionView.classList.add('hidden');
                 authView.classList.remove('hidden');
             }
         });
@@ -219,8 +222,16 @@
             const password = document.getElementById('register-password').value;
             authError.textContent = '';
             try {
-                await createUserWithEmailAndPassword(auth, email, password);
-                // O onAuthStateChanged vai cuidar de redirecionar
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Cria um documento para o novo usuário no Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    email: user.email,
+                    createdAt: new Date(),
+                    subscriptionActive: false // Padrão é não ser assinante
+                });
+                // onAuthStateChanged vai cuidar de mostrar a tela de assinatura
             } catch (error) {
                 authError.textContent = "Erro ao criar conta: " + error.message;
             }
@@ -234,20 +245,19 @@
             authError.textContent = '';
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                 // O onAuthStateChanged vai cuidar de redirecionar
+                 // onAuthStateChanged vai cuidar de mostrar a tela correta (app ou assinatura)
             } catch (error) {
                 authError.textContent = "Erro ao entrar: " + error.message;
             }
         });
-
+        
         // Logout
-        logoutBtn.addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-            } catch (error) {
-                console.error("Erro ao sair:", error);
-            }
-        });
+        const handleLogout = async () => {
+             try { await signOut(auth); } catch (error) { console.error("Erro ao sair:", error); }
+        };
+        logoutBtnApp.addEventListener('click', handleLogout);
+        logoutBtnSub.addEventListener('click', handleLogout);
+
     </script>
 
     <script>
@@ -300,3 +310,4 @@
     </script>
 </body>
 </html>
+
