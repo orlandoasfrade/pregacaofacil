@@ -73,17 +73,54 @@
     </div>
 
     <!-- TELA DE ASSINATURA -->
-    <div id="subscription-view" class="min-h-screen flex items-center justify-center hidden">
-        <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg text-center">
-            <div id="welcome-message" class="hidden mb-4 p-3 bg-green-100 text-green-800 border border-green-200 rounded-lg">
-                <p><strong>Seja bem-vindo(a) ao PregaçãoFácil!</strong> Sua conta foi criada com sucesso.</p>
+    <div id="subscription-view" class="min-h-screen flex items-center justify-center hidden bg-gray-100 py-12">
+        <div class="max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div id="welcome-message" class="hidden mb-6 p-4 bg-green-100 text-green-800 border border-green-200 rounded-lg max-w-2xl mx-auto">
+                    <p><strong>Seja bem-vindo(a) ao PregaçãoFácil!</strong> Sua conta foi criada com sucesso.</p>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900 sm:text-4xl">Escolha o plano ideal para você</h1>
+                <p id="subscription-prompt" class="mt-4 text-xl text-gray-600">Acesse todos os recursos e comece a criar sermões inspiradores hoje mesmo.</p>
             </div>
-            <h1 class="text-3xl font-bold text-blue-600 mb-4">Acesso Exclusivo</h1>
-            <p id="subscription-prompt" class="text-gray-600 mb-8">Para utilizar o PregaçãoFácil, é necessário ter uma assinatura ativa. Escolha um dos nossos planos e libere todo o potencial da ferramenta!</p>
-            <button id="subscribe-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg w-full mb-4">
-                Ver Planos de Assinatura
-            </button>
-            <button id="logout-btn-sub" class="text-sm text-gray-500 hover:text-gray-700">Sair</button>
+            
+            <div class="mt-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Plano Mensal -->
+                <div class="border border-gray-200 rounded-lg shadow-sm divide-y divide-gray-200 bg-white">
+                    <div class="p-6 text-center">
+                        <h2 class="text-lg leading-6 font-medium text-gray-900">Mensal</h2>
+                        <p class="mt-2 text-4xl font-extrabold text-gray-900">R$10<span class="text-base font-medium text-gray-500">/mês</span></p>
+                        <p class="mt-4 text-sm text-gray-500">Ideal para experimentar.</p>
+                        <a href="https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=92fdaa305c3e4b269e9df7bed3419436" class="mt-8 block w-full bg-blue-600 border border-transparent rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-blue-700">Assinar Agora</a>
+                    </div>
+                </div>
+
+                <!-- Plano Anual (Destaque) -->
+                <div class="border-2 border-blue-600 rounded-lg shadow-lg divide-y divide-gray-200 bg-white relative">
+                    <div class="absolute top-0 right-0 -mt-3 mr-3">
+                        <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800">Mais Popular</span>
+                    </div>
+                    <div class="p-6 text-center">
+                        <h2 class="text-lg leading-6 font-medium text-blue-600">Anual</h2>
+                        <p class="mt-2 text-4xl font-extrabold text-blue-600">R$8<span class="text-base font-medium text-gray-500">/mês</span></p>
+                        <p class="mt-4 text-sm text-gray-500">Cobrança de R$96,00 por ano.<br><strong class="text-blue-600">Economize 20%!</strong></p>
+                        <a href="https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=da26eac3c3c5400ca51856d8d65f62bc" class="mt-8 block w-full bg-blue-600 border border-transparent rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-blue-700">Assinar Agora</a>
+                    </div>
+                </div>
+
+                <!-- Plano Semestral -->
+                <div class="border border-gray-200 rounded-lg shadow-sm divide-y divide-gray-200 bg-white">
+                    <div class="p-6 text-center">
+                        <h2 class="text-lg leading-6 font-medium text-gray-900">Semestral</h2>
+                        <p class="mt-2 text-4xl font-extrabold text-gray-900">R$9<span class="text-base font-medium text-gray-500">/mês</span></p>
+                        <p class="mt-4 text-sm text-gray-500">Cobrança de R$54,00 a cada 6 meses (10% de desconto).</p>
+                        <a href="https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=93dd9fbf145b4cd49276013df7bb1a37" class="mt-8 block w-full bg-blue-600 border border-transparent rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-blue-700">Assinar Agora</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-8">
+                <button id="logout-btn-sub" class="text-sm text-gray-500 hover:text-gray-700 underline">Sair da conta</button>
+            </div>
         </div>
     </div>
 
@@ -332,5 +369,6 @@
     </script>
 </body>
 </html>
+
 
 
