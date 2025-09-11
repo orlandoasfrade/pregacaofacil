@@ -5,750 +5,286 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PregaçãoFácil</title>
 
+    <!-- Meta tags para ícones e PWA -->
+    <meta name="theme-color" content="#0284c7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PregaçãoFácil">
+
+    <!-- Ícones -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://storage.googleapis.com/maker-media/images/pf-final-icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://storage.googleapis.com/maker-media/images/pf-final-icon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://storage.googleapis.com/maker-media/images/pf-final-icon-180.png">
+    
+    <!-- Manifesto para PWA -->
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiUHJlZ2HDp8Ojby1Gw6FjaWwiLCJzaG9ydF9uYW1lIjoiUHJlZ2HDp8Ojby1Gw6FjaWwiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsInRoZW1lX2NvbG9yIjoiIzAyODRjNyIsImljb25zIjpbeyJzcmMiOiJodHRwczovL3N0b3JhZ2UuZ29vZ2xlYXBpcy5jb20vbWFrZXItbWVkaWEvaW1hZ2VzL3BmLWZpbmFsLWljb24tMTkyLnBuZyIsInNpemVzIjoiMTkyeDE5MiIsInR5cGUiOiJpbWFnZS9wbmciLCJwdXJwb3NlIjoiYW55IG1hc2thYmxlIn0seyJzcmMiOiJodHRwczovL3N0b3JhZ2UuZ29vZ2xlYXBpcy5jb20vbWFrZXItbWVkaWEvaW1hZ2VzL3BmLWZpbmFsLWljb24tNTEyLnBuZyIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9wbmciLCJwdXJwb3NlIjoiYW55IG1hc2thYmxlIn1dfQ==">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .step-card {
-            transition: all 0.3s ease-in-out;
-        }
-        .step-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        #loading-overlay, #modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-        #loading-overlay.visible, #modal-overlay.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-        .loader {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .step-card { transition: all 0.3s ease-in-out; }
+        .step-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        #loading-overlay, #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
+        #loading-overlay.visible, #modal-overlay.visible { opacity: 1; visibility: visible; }
+        .loader { border: 8px solid #f3f3f3; border-top: 8px solid #3498db; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <!-- Overlays -->
-    <div id="loading-overlay">
-        <div class="loader"></div>
-    </div>
-    <div id="modal-overlay">
-        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 flex flex-col max-h-[85vh]">
-            <div class="p-6 border-b sticky top-0 bg-white rounded-t-lg">
-                <h3 id="modal-title" class="text-2xl font-bold"></h3>
+    <!-- TELA DE AUTENTICAÇÃO -->
+    <div id="auth-view" class="min-h-screen flex items-center justify-center hidden">
+        <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-blue-600">PregaçãoFácil</h1>
+                <p id="auth-subtitle" class="text-gray-600 mt-2">Acesse sua conta para continuar</p>
             </div>
-            <div id="modal-content" class="p-6 prose max-w-none overflow-y-auto"></div>
-            <div class="p-4 border-t text-right sticky bottom-0 bg-white rounded-b-lg flex justify-end gap-4">
-                <button id="copy-modal-btn" class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700">Copiar</button>
-                <button id="close-modal-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Fechar</button>
-            </div>
+
+            <!-- Formulário de Login -->
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="login-email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                    <input type="email" id="login-email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div class="mb-6">
+                    <label for="login-password" class="block text-gray-700 text-sm font-bold mb-2">Senha</label>
+                    <input type="password" id="login-password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div class="flex items-center justify-between">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Entrar
+                    </button>
+                    <a id="show-register-link" class="inline-block align-baseline font-bold text-sm text-blue-600 hover:text-blue-800" href="#">
+                        Criar conta
+                    </a>
+                </div>
+            </form>
+
+            <!-- Formulário de Cadastro -->
+            <form id="register-form" class="hidden">
+                <div class="mb-4">
+                    <label for="register-email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                    <input type="email" id="register-email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div class="mb-6">
+                    <label for="register-password" class="block text-gray-700 text-sm font-bold mb-2">Senha</label>
+                    <input type="password" id="register-password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div class="flex items-center justify-between">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Criar Conta
+                    </button>
+                    <a id="show-login-link" class="inline-block align-baseline font-bold text-sm text-blue-600 hover:text-blue-800" href="#">
+                        Já tenho uma conta
+                    </a>
+                </div>
+            </form>
+            
+            <p id="auth-error" class="text-red-500 text-xs italic mt-4 text-center"></p>
         </div>
     </div>
 
-    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
-        <header class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-bold text-blue-600">PregaçãoFácil</h1>
-            <p class="text-lg text-gray-600 mt-2">Organize a mensagem. Liberte o pregador.</p>
-        </header>
-
-        <main id="main-content">
-            <!-- Passo 1: Propósito -->
-            <div id="step-1" class="step-container">
-                <h2 class="text-2xl font-semibold mb-6 text-center">Passo 1: Qual é o propósito da sua pregação?</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="select" data-type="purpose" data-value="Ensino (Didática)">
-                        <div class="flex items-center justify-center">
-                            <span>Ensino</span>
-                            <div class="group relative ml-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Para edificar e aprofundar o conhecimento bíblico e teológico da congregação.</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="select" data-type="purpose" data-value="Evangelismo (Querigmática)">
-                        <div class="flex items-center justify-center">
-                            <span>Evangelismo</span>
-                             <div class="group relative ml-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Para apresentar o plano de salvação de forma clara e convidativa a não-crentes.</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="select" data-type="purpose" data-value="Exortação (Paraclética)">
-                         <div class="flex items-center justify-center">
-                            <span>Exortação</span>
-                             <div class="group relative ml-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Para desafiar, motivar e corrigir a congregação à ação e ao arrependimento.</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="select" data-type="purpose" data-value="Consolo (Pastoral)">
-                        <div class="flex items-center justify-center">
-                            <span>Consolo</span>
-                             <div class="group relative ml-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Para trazer conforto, esperança e encorajamento para pessoas que enfrentam dificuldades.</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer col-span-1 sm:col-span-2 lg:col-span-1" data-action="select" data-type="purpose" data-value="Celebração (Ocasional)">
-                        <div class="flex items-center justify-center">
-                            <span>Celebração</span>
-                             <div class="group relative ml-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Para marcar datas e eventos especiais do calendário cristão e da vida da igreja.</div>
-                            </div>
-                        </div>
-                    </div>
+    <!-- TELA PRINCIPAL DO APP -->
+    <div id="app-view" class="hidden">
+        <!-- Overlays do App -->
+        <div id="loading-overlay"><div class="loader"></div></div>
+        <div id="modal-overlay">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 flex flex-col max-h-[85vh]">
+                <div class="p-6 border-b sticky top-0 bg-white rounded-t-lg">
+                    <h3 id="modal-title" class="text-2xl font-bold"></h3>
+                </div>
+                <div id="modal-content" class="p-6 prose max-w-none overflow-y-auto"></div>
+                <div class="p-4 border-t text-right sticky bottom-0 bg-white rounded-b-lg flex justify-end gap-4">
+                    <button id="copy-modal-btn" class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700">Copiar</button>
+                    <button id="close-modal-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Fechar</button>
                 </div>
             </div>
-
-            <!-- Passo 1.1: Categorias de Celebração (Condicional) -->
-            <div id="step-1-1" class="step-container hidden">
-                <h2 class="text-2xl font-semibold mb-6 text-center">Qual é a categoria da Celebração?</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-celebration-options" data-value="calendario">Calendário Cristão</div>
-                    <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-celebration-options" data-value="vidaIgreja">Vida da Igreja</div>
-                    <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-celebration-options" data-value="eventosEspeciais">Datas e Eventos Especiais</div>
-                </div>
-                <div class="text-center mt-6">
-                    <button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-1">Voltar</button>
-                </div>
-            </div>
-
-            <!-- Passo 1.2: Opções de Celebração (Condicional) -->
-            <div id="step-1-2" class="step-container hidden"></div>
-
-            <!-- Passo 2: Categorias de Área da Vida -->
-            <div id="step-2" class="step-container hidden">
-                <h2 class="text-2xl font-semibold mb-6 text-center">Passo 2: Para quem ou para qual área da vida?</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-area-options" data-value="grupos">A. Grupos Específicos (Público-Alvo)</div>
-                    <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-area-options" data-value="areas">B. Áreas da Vida (Contexto)</div>
-                </div>
-                <div class="text-center mt-6">
-                    <button id="back-from-step2" class="text-sm text-blue-600 hover:underline">Voltar</button>
-                </div>
-            </div>
-            
-            <!-- Passo 2.1: Opções de Área da Vida (Condicional) -->
-            <div id="step-2-1" class="step-container hidden"></div>
-
-            <!-- Passo 3: Categorias de Tema -->
-            <div id="step-3" class="step-container hidden">
-                 <h2 class="text-2xl font-semibold mb-6 text-center">Passo 3: Qual é a categoria do tema?</h2>
-                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-theme-options" data-value="teologicos">A. Temas Teológicos</div>
-                    <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-theme-options" data-value="praticos">B. Temas da Vida Cristã</div>
-                    <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-theme-options" data-value="desafios">C. Desafios e Superação</div>
-                </div>
-                <div class="text-center mt-6">
-                    <button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-2-1">Voltar</button>
-                </div>
-            </div>
-
-            <!-- Passo 3.1: Opções de Tema (Condicional) -->
-            <div id="step-3-1" class="step-container hidden"></div>
-
-            <!-- Passo 3.2: Opções de Subtema (Condicional) -->
-            <div id="step-3-2" class="step-container hidden"></div>
-
-            <!-- Mensagem de Erro -->
-            <div id="main-error-message" class="hidden my-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-center">
-                <p><strong>Ocorreu um erro:</strong> <span id="main-error-text"></span></p>
-            </div>
-
-            <!-- Botão de Geração -->
-            <div id="generate-button-container" class="step-container text-center mt-8 hidden">
-                <button id="generate-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors duration-300">
-                    Gerar Esboço
-                </button>
-                 <div class="text-center mt-4">
-                    <button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-3-2">Voltar</button>
-                </div>
-            </div>
-        </main>
-        
-        <!-- Área de Resultados -->
-        <div id="results-container" class="hidden mt-12 bg-white p-6 md:p-8 rounded-lg shadow-lg">
-             <h2 class="text-3xl font-bold mb-6 border-b pb-4">Seu Esboço de Pregação</h2>
-             <div id="results-content" class="prose max-w-none"></div>
-             
-             <!-- Gemini Features -->
-             <div class="mt-8 border-t pt-6 flex flex-col md:flex-row gap-4">
-                 <button id="deepen-btn" class="bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 transition-colors duration-300 w-full group relative">
-                    <div class="flex items-center justify-center">
-                        <span id="deepen-btn-text">✨ Aprofundar Tema</span>
-                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Gera uma análise teológica detalhada do tema e do texto base, explorando contexto histórico e significados originais.</div>
-                    </div>
-                 </button>
-                 <button id="illustrate-btn" class="bg-teal-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-teal-600 transition-colors duration-300 w-full group relative">
-                    <div class="flex items-center justify-center">
-                        <span id="illustrate-btn-text">✨ Criar Ilustração</span>
-                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Cria uma nova história ou analogia para conectar a mensagem ao coração dos ouvintes.</div>
-                    </div>
-                 </button>
-             </div>
-
-             <div class="mt-8 border-t pt-6 flex flex-col md:flex-row gap-4">
-                <button id="copy-esboco-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300 w-full">Copiar Esboço</button>
-                <button id="reset-btn" class="bg-gray-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-600 transition-colors duration-300 w-full">Criar Novo Esboço</button>
-             </div>
         </div>
 
+        <!-- Conteúdo do App -->
+        <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+            <header class="text-center mb-12 flex justify-between items-center">
+                <div></div> <!-- Espaçador -->
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-bold text-blue-600">PregaçãoFácil</h1>
+                    <p class="text-lg text-gray-600 mt-2">Organize a mensagem. Liberte o pregador.</p>
+                </div>
+                <button id="logout-btn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Sair</button>
+            </header>
+            <main id="main-content">
+                 <!-- Todo o conteúdo do gerador de sermão (Passo 1, 2, 3, etc.) entra aqui -->
+                 <div id="step-1" class="step-container">
+                    <h2 class="text-2xl font-semibold mb-6 text-center">Passo 1: Qual é o propósito da sua pregação?</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="select" data-type="purpose" data-value="Ensino (Didática)">
+                            <div class="flex items-center justify-center"><span>Ensino</span><div class="group relative ml-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg><div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Para edificar e aprofundar o conhecimento bíblico e teológico da congregação.</div></div></div>
+                        </div>
+                        <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="select" data-type="purpose" data-value="Evangelismo (Querigmática)">
+                            <div class="flex items-center justify-center"><span>Evangelismo</span><div class="group relative ml-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg><div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Para apresentar o plano de salvação de forma clara e convidativa a não-crentes.</div></div></div>
+                        </div>
+                        <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="select" data-type="purpose" data-value="Exortação (Paraclética)">
+                            <div class="flex items-center justify-center"><span>Exortação</span><div class="group relative ml-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg><div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Para desafiar, motivar e corrigir a congregação à ação e ao arrependimento.</div></div></div>
+                        </div>
+                        <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="select" data-type="purpose" data-value="Consolo (Pastoral)">
+                            <div class="flex items-center justify-center"><span>Consolo</span><div class="group relative ml-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg><div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Para trazer conforto, esperança e encorajamento para pessoas que enfrentam dificuldades.</div></div></div>
+                        </div>
+                        <div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer col-span-1 sm:col-span-2 lg:col-span-1" data-action="select" data-type="purpose" data-value="Celebração (Ocasional)">
+                            <div class="flex items-center justify-center"><span>Celebração</span><div class="group relative ml-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg><div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Para marcar datas e eventos especiais do calendário cristão e da vida da igreja.</div></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="step-1-1" class="step-container hidden"><h2 class="text-2xl font-semibold mb-6 text-center">Qual é a categoria da Celebração?</h2><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-celebration-options" data-value="calendario">Calendário Cristão</div><div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-celebration-options" data-value="vidaIgreja">Vida da Igreja</div><div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-celebration-options" data-value="eventosEspeciais">Datas e Eventos Especiais</div></div><div class="text-center mt-6"><button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-1">Voltar</button></div></div>
+                <div id="step-1-2" class="step-container hidden"></div>
+                <div id="step-2" class="step-container hidden"><h2 class="text-2xl font-semibold mb-6 text-center">Passo 2: Para quem ou para qual área da vida?</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-area-options" data-value="grupos">A. Grupos Específicos (Público-Alvo)</div><div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-area-options" data-value="areas">B. Áreas da Vida (Contexto)</div></div><div class="text-center mt-6"><button id="back-from-step2" class="text-sm text-blue-600 hover:underline">Voltar</button></div></div>
+                <div id="step-2-1" class="step-container hidden"></div>
+                <div id="step-3" class="step-container hidden"><h2 class="text-2xl font-semibold mb-6 text-center">Passo 3: Qual é a categoria do tema?</h2><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-theme-options" data-value="teologicos">A. Temas Teológicos</div><div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-theme-options" data-value="praticos">B. Temas da Vida Cristã</div><div class="step-card bg-white p-6 rounded-lg shadow-md cursor-pointer" data-action="show-theme-options" data-value="desafios">C. Desafios e Superação</div></div><div class="text-center mt-6"><button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-2-1">Voltar</button></div></div>
+                <div id="step-3-1" class="step-container hidden"></div>
+                <div id="step-3-2" class="step-container hidden"></div>
+                <div id="main-error-message" class="hidden my-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-center"><p><strong>Ocorreu um erro:</strong> <span id="main-error-text"></span></p></div>
+                <div id="generate-button-container" class="step-container text-center mt-8 hidden"><button id="generate-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors duration-300">Gerar Esboço</button><div class="text-center mt-4"><button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-3-2">Voltar</button></div></div>
+            </main>
+            <div id="results-container" class="hidden mt-12 bg-white p-6 md:p-8 rounded-lg shadow-lg">
+                <h2 class="text-3xl font-bold mb-6 border-b pb-4">Seu Esboço de Pregação</h2>
+                <div id="results-content" class="prose max-w-none"></div>
+                <div class="mt-8 border-t pt-6 flex flex-col md:flex-row gap-4"><button id="deepen-btn" class="bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 transition-colors duration-300 w-full group relative"><div class="flex items-center justify-center"><span id="deepen-btn-text">✨ Aprofundar Tema</span><div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Gera uma análise teológica detalhada do tema e do texto base, explorando contexto histórico e significados originais.</div></div></button><button id="illustrate-btn" class="bg-teal-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-teal-600 transition-colors duration-300 w-full group relative"><div class="flex items-center justify-center"><span id="illustrate-btn-text">✨ Criar Ilustração</span><div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Cria uma nova história ou analogia para conectar a mensagem ao coração dos ouvintes.</div></div></button></div>
+                <div class="mt-8 border-t pt-6 flex flex-col md:flex-row gap-4"><button id="copy-esboco-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300 w-full">Copiar Esboço</button><button id="reset-btn" class="bg-gray-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-600 transition-colors duration-300 w-full">Criar Novo Esboço</button></div>
+            </div>
+        </div>
     </div>
+    
+    <!-- Scripts Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    <script>
-        // Variáveis globais
-        const selections = {
-            purpose: null,
-            celebrationCategory: null,
-            celebration: null,
-            areaCategory: null,
-            area: null,
-            themeCategory: null,
-            theme: null,
-            subTheme: null
-        };
-        let sermonData = {
-            esboco: null,
-            aprofundamento: null,
-            ilustracao: null
+        // Suas chaves de configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5RiD_NitvmIY5G1X6XBayJBmNnBraWgQ",
+            authDomain: "pregacaofacil-app.firebaseapp.com",
+            projectId: "pregacaofacil-app",
+            storageBucket: "pregacaofacil-app.appspot.com",
+            messagingSenderId: "558411431322",
+            appId: "1:558411431322:web:3d8e2338bb3537345f4e23"
         };
 
-        const celebrationData = {
-            'calendario': { title: 'Calendário Cristão', options: ['Páscoa', 'Natal', 'Pentecostes', 'Ano Novo', 'Domingo de Ramos', 'Sexta-feira Santa'] },
-            'vidaIgreja': { title: 'Vida da Igreja', options: ['Aniversário da Igreja', 'Batismos', 'Santa Ceia', 'Apresentação de Crianças', 'Culto de Missões', 'Consagração de Líderes'] },
-            'eventosEspeciais': { title: 'Datas e Eventos Especiais', options: ['Dia das Mães', 'Dia dos Pais', 'Dia da Bíblia', 'Ação de Graças', 'Dia do Pastor', 'Casamento', 'Aniversário', 'Formatura', 'Velório'] }
-        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-        const areaData = {
-            'grupos': { title: 'Grupos Específicos (Público-Alvo)', options: ['Congregação Geral', 'Família', 'Casais', 'Homens', 'Mulheres', 'Jovens', 'Adolescentes', 'Líderes e Obreiros'] },
-            'areas': { title: 'Áreas da Vida (Contexto)', options: ['Vida Espiritual', 'Vida Profissional', 'Finanças', 'Saúde Emocional', 'Relacionamentos', 'Casamento e Lar', 'Desafios Pessoais'] }
-        };
+        // Elementos da UI de Autenticação
+        const authView = document.getElementById('auth-view');
+        const appView = document.getElementById('app-view');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const showRegisterLink = document.getElementById('show-register-link');
+        const showLoginLink = document.getElementById('show-login-link');
+        const authSubtitle = document.getElementById('auth-subtitle');
+        const authError = document.getElementById('auth-error');
+        const logoutBtn = document.getElementById('logout-btn');
 
-        const themeData = {
-            'teologicos': { title: 'Temas Teológicos', themes: ['Fé', 'Graça', 'Amor', 'Perdão', 'Esperança', 'Salvação', 'A Pessoa de Jesus', 'O Espírito Santo', 'Santidade', 'A Palavra de Deus', 'A Igreja', 'Soberania de Deus'] },
-            'praticos': { title: 'Temas da Vida Cristã', themes: ['Oração e Intimidade', 'Serviço e Humildade', 'Adoração', 'Contentamento', 'Mordomia e Generosidade', 'Comunhão', 'Testemunho', 'Sabedoria'] },
-            'desafios': { title: 'Desafios e Superação', themes: ['Superando o Medo e a Ansiedade', 'O Propósito do Sofrimento', 'Restauração e Novos Começos', 'Lidando com a Tentação', 'Dúvida', 'Ira e Amargura', 'Orgulho', 'Solidão'] }
-        };
+        // Lógica para alternar entre Login e Cadastro
+        showRegisterLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            authSubtitle.textContent = 'Crie sua conta para começar';
+            authError.textContent = '';
+        });
 
-        const subThemesData = {
-            'Fé': ['A natureza da fé bíblica', 'Fé em tempos de dúvida', 'A fé que move montanhas', 'Vivendo pela fé, não pela vista', 'A fé e as obras'],
-            'Graça': ['Vivendo na liberdade da graça', 'Graça vs. Merecimento', 'A graça que nos capacita', 'Crescendo na graça', 'Onde abundou o pecado, superabundou a graça'],
-            'Amor': ['O amor Ágape: o padrão divino', 'O amor como a marca do discípulo', 'Amando os inimigos', 'O amor de Deus como fundamento', 'O amor sacrificial'],
-            'Perdão': ['O poder libertador do perdão', 'Perdoar como fomos perdoados', 'A dificuldade de perdoar a si mesmo', 'As consequências da falta de perdão', 'A cura através do perdão'],
-            'Esperança': ['A viva esperança da ressurreição', 'Esperança em meio ao caos', 'A esperança da volta de Cristo', 'A esperança como âncora da alma', 'Alegria na esperança'],
-            'Salvação': ['Justificação, Santificação e Glorificação', 'A segurança da salvação', 'As implicações da salvação hoje', 'Salvação somente pela fé', 'O custo do discipulado'],
-            'Santidade': ['O chamado à santidade', 'Santidade como separação para Deus', 'Santidade prática no dia a dia', 'A santidade como um processo contínuo', 'Buscai a paz e a santificação'],
-            'A Pessoa de Jesus': ['A divindade e humanidade de Cristo', 'Os nomes e títulos de Jesus', 'A supremacia de Cristo', 'O significado da cruz e ressurreição', 'Os "Eu Sou" de Jesus'],
-            'O Espírito Santo': ['Quem é o Espírito Santo?', 'O Fruto do Espírito', 'Os Dons do Espírito', 'Andando e vivendo no Espírito', 'O selo do Espírito'],
-            'A Palavra de Deus': ['A inspiração e inerrância das Escrituras', 'A Bíblia como nosso guia', 'Como estudar a Bíblia', 'O poder transformador da Palavra', 'Meditando na Lei do Senhor'],
-            'A Igreja': ['A natureza e missão da Igreja', 'A Igreja como corpo de Cristo', 'A importância da comunhão', 'As ordenanças: Batismo e Santa Ceia', 'A noiva de Cristo'],
-            'Soberania de Deus': ['O controle de Deus sobre todas as coisas', 'Confiança na soberania divina', 'Soberania de Deus e responsabilidade humana', 'Descansando no plano soberano de Deus'],
-            'Oração e Intimidade': ['O poder da oração persistente', 'Como ouvir a voz de Deus', 'Superando a dificuldade de orar', 'A oração do Pai Nosso', 'A oração intercessória'],
-            'Serviço e Humildade': ['O coração de servo', 'Servindo com os dons', 'O perigo do orgulho', 'Encontrando grandeza no serviço', 'Lavando os pés uns dos outros'],
-            'Adoração': ['O que é verdadeira adoração?', 'Adoração em espírito e em verdade', 'Um estilo de vida de adoração', 'A adoração como arma espiritual', 'Adoração em meio às provações'],
-            'Contentamento': ['O segredo do contentamento', 'Vencendo a inveja e o materialismo', 'A gratidão como chave', 'Contentamento vs. Acomodação'],
-            'Mordomia e Generosidade': ['Administrando tempo, talentos e tesouros', 'A alegria de um coração generoso', 'O princípio da semeadura e colheita', 'Fidelidade no pouco e no muito'],
-            'Comunhão': ['A importância vital de congregar', 'Carregando as cargas uns dos outros', 'A unidade do corpo de Cristo', 'A hospitalidade como expressão de comunhão'],
-            'Testemunho': ['Sendo sal e luz no mundo', 'Como compartilhar sua história de fé', 'Vivendo um evangelho que atrai', 'O testemunho através das ações'],
-            'Sabedoria': ['Buscando a sabedoria do alto', 'Sabedoria humana vs. divina', 'Tomando decisões sábias', 'O temor do Senhor como princípio'],
-            'Superando o Medo e a Ansiedade': ['Trocando o medo pela fé', 'A paz de Deus', 'Lançando sobre Ele toda a ansiedade', 'Não temas: a ordem mais repetida'],
-            'O Propósito do Sofrimento': ['Onde está Deus na dor', 'Crescimento na provação', 'O sofrimento produzindo perseverança', 'O testemunho através do sofrimento'],
-            'Restauração e Novos Começos': ['Deus de segundas chances', 'Deixando o passado para trás', 'A beleza das cinzas', 'Restaurando relacionamentos', 'A restauração da alegria'],
-            'Lidando com a Tentação': ['As rotas de fuga de Deus', 'Vencendo o pecado pela Palavra', 'A batalha da mente', 'Identificando as fontes da tentação'],
-            'Dúvida': ['Navegando crises de fé', 'A fé que questiona e busca', 'Encontrando segurança em Deus', 'Honestidade com Deus na dúvida'],
-            'Ira e Amargura': ['O perigo de guardar rancor', 'Entregando a ira a Deus', 'O caminho para a paz interior', '"Não se ponha o sol sobre a vossa ira"'],
-            'Orgulho': ['A raiz de muitos pecados', 'A humildade como antídoto', 'Reconhecendo o orgulho em nós', 'O exemplo de humildade de Cristo'],
-            'Solidão': ['A presença constante de Deus', 'Encontrando família na igreja', 'Superando o sentimento de isolamento', 'A solidão como lugar de encontro com Deus']
-        };
+        showLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            authSubtitle.textContent = 'Acesse sua conta para continuar';
+            authError.textContent = '';
+        });
 
-        const API_KEY = "AIzaSyBg7JKdImrnowHk9FDCvVU7omfXzxsJN8w"; 
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
-        
-        async function callGeminiAPI(prompt) {
-            const payload = { contents: [{ parts: [{ text: prompt }] }] };
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error.message || `Erro ${response.status}`);
-            }
-            const data = await response.json();
-            if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts) {
-                 return data.candidates[0].content.parts[0].text;
+        // Lógica de Autenticação
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Usuário está logado
+                authView.classList.add('hidden');
+                appView.classList.remove('hidden');
             } else {
-                console.error("Invalid response structure from API:", data);
-                throw new Error("A resposta da API não contém o conteúdo esperado.");
+                // Usuário não está logado
+                appView.classList.add('hidden');
+                authView.classList.remove('hidden');
             }
-        }
-
-        function showStep(stepId) {
-            document.querySelectorAll('.step-container').forEach(el => el.classList.add('hidden'));
-            document.getElementById(stepId).classList.remove('hidden');
-        }
-
-        function handleBackFromStep2() {
-            if (selections.purpose === 'Celebração (Ocasional)') {
-                showStep('step-1-1');
-            } else {
-                showStep('step-1');
-            }
-        }
-
-        function selectOption(type, value) {
-            selections[type] = value;
-            if (type === 'purpose') {
-                if (value === 'Celebração (Ocasional)') {
-                    showStep('step-1-1');
-                } else {
-                    selections.celebration = null; 
-                    selections.celebrationCategory = null;
-                    showStep('step-2');
-                }
-            } else if (type === 'celebration') {
-                showStep('step-2');
-            } else if (type === 'area') {
-                showStep('step-3');
-            }
-        }
-
-        function showCelebrationOptions(categoryKey) {
-            selections.celebrationCategory = celebrationData[categoryKey].title;
-            const category = celebrationData[categoryKey];
-            const container = document.getElementById('step-1-2');
-            let html = `<h2 class="text-2xl font-semibold mb-6 text-center">Escolha uma opção para "${category.title}":</h2>`;
-            html += '<div class="grid grid-cols-2 md:grid-cols-4 gap-4">';
-            category.options.forEach(option => {
-                html += `<div class="step-card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-action="select" data-type="celebration" data-value="${option}">${option}</div>`;
-            });
-            html += '</div>';
-            html += `<div class="text-center mt-6"><button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-1-1">Voltar</button></div>`;
-            container.innerHTML = html;
-            showStep('step-1-2');
-        }
-
-        function showAreaOptions(categoryKey) {
-            selections.areaCategory = areaData[categoryKey].title;
-            const category = areaData[categoryKey];
-            const container = document.getElementById('step-2-1');
-            let html = `<h2 class="text-2xl font-semibold mb-6 text-center">Escolha uma opção para "${category.title}":</h2>`;
-            html += '<div class="grid grid-cols-2 md:grid-cols-4 gap-4">';
-            category.options.forEach(option => {
-                html += `<div class="step-card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-action="select" data-type="area" data-value="${option}">${option}</div>`;
-            });
-            html += '</div>';
-            html += `<div class="text-center mt-6"><button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-2">Voltar</button></div>`;
-            container.innerHTML = html;
-            showStep('step-2-1');
-        }
-
-        function showThemeOptions(categoryKey) {
-            selections.themeCategory = themeData[categoryKey].title;
-            const category = themeData[categoryKey];
-            const container = document.getElementById('step-3-1');
-            let html = `<h2 class="text-2xl font-semibold mb-6 text-center">Escolha um tema para "${category.title}":</h2>`;
-            html += '<div class="grid grid-cols-2 md:grid-cols-4 gap-4">';
-            category.themes.forEach(theme => {
-                html += `<div class="step-card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-action="show-subthemes" data-value="${theme}">${theme}</div>`;
-            });
-            html += '</div>';
-            html += `<div class="text-center mt-6"><button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-3">Voltar</button></div>`;
-            container.innerHTML = html;
-            showStep('step-3-1');
-        }
-
-        function showSubThemes(mainTheme) {
-            selections.theme = mainTheme;
-            const subThemes = subThemesData[mainTheme];
-            const container = document.getElementById('step-3-2');
-            
-            let html = `<h2 class="text-2xl font-semibold mb-6 text-center">Escolha um subtema para "${mainTheme}":</h2><div class="grid grid-cols-2 md:grid-cols-4 gap-4">`;
-            subThemes.forEach(subTheme => {
-                html += `<div class="step-card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-action="select-subtheme" data-value="${subTheme}">${subTheme}</div>`;
-            });
-            html += `</div><div class="text-center mt-6"><button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-3-1">Voltar</button></div>`;
-            
-            container.innerHTML = html;
-            showStep('step-3-2');
-        }
+        });
         
-        async function generateSermon() {
-            hideMainError();
-            showLoading(true);
-            
-            let tone = "inspirador e claro";
-            if (selections.purpose.includes('Consolo')) {
-                tone = "consolador, empático e esperançoso";
-            } else if (selections.purpose.includes('Exortação')) {
-                tone = "desafiador, direto e motivador";
-            } else if (selections.purpose.includes('Evangelismo')) {
-                tone = "convidativo, claro e focado na esperança";
-            } else if (selections.purpose.includes('Celebração')) {
-                tone = "alegre, celebrativo e inspirador";
-            }
-
-            const celebrationText = selections.celebration || 'Nenhuma';
-            
-            const prompt = `Aja como um professor de homilética e teologia pastoral com décadas de experiência na formação de pregadores. Sua tarefa é criar um esboço de sermão para a plataforma PregaçãoFácil.
-
-A prioridade máxima é a fidelidade bíblica, a clareza expositiva e a aplicação prática relevante.
-
-**Parâmetros da Mensagem:**
-- **Propósito Homilético:** ${selections.purpose}
-- **Ocasião Especial (se aplicável):** ${celebrationText}
-- **Público-Alvo/Contexto:** ${selections.area}
-- **Tema Central:** ${selections.theme}
-- **Subtema Específico:** ${selections.subTheme}
-- **Tom da Mensagem:** ${tone}
-
-**Instruções de Estrutura (Siga ESTRITAMENTE):**
-O resultado deve ser em HTML, usando a seguinte estrutura. As instruções entre colchetes devem guiar o conteúdo:
-
-<h3><strong>1. TÍTULO SUGERIDO</strong></h3>
-<p>[Crie um título que seja ao mesmo tempo teologicamente rico e convidativo.]</p>
-
-<h3><strong>2. TEXTO BASE SUGERIDO</strong></h3>
-<p>[Sugira uma passagem central (texto âncora) que fundamente toda a mensagem. **Inclua a referência E o texto completo da passagem.**]</p>
-
-<h3><strong>3. VERSÍCULOS DE APOIO SUGERIDOS</strong></h3>
-<ul><li>[Liste 3 a 5 versículos que complementem e reforcem o texto base. **Para cada um, inclua a referência E o texto completo do versículo.**]</li></ul>
-
-<h3><strong>4. ESBOÇO DA PREGAÇÃO</strong></h3>
-<h4><i><b>Introdução:</b></i></h4>
-<p>[Crie uma introdução que conecte a realidade do ouvinte ao tema central da passagem, gerando interesse e necessidade pela mensagem.]</p>
-
-<h4><i><b>Ponto 1:</b></i></h4>
-<p><i>Afirmação:</i> [Formule uma afirmação clara e memorável para cada ponto.]</p>
-<p>[Para cada ponto, desenvolva uma explicação exegética (explicando o significado do texto em seu contexto) e teológica clara. A aplicação prática deve ser um passo concreto que o ouvinte pode dar durante a semana.]</p>
-
-<h4><i><b>Ponto 2:</b></i></h4>
-<p><i>Afirmação:</i> [Formule uma afirmação clara e memorável para cada ponto.]</p>
-<p>[Para cada ponto, desenvolva uma explicação exegética (explicando o significado do texto em seu contexto) e teológica clara. A aplicação prática deve ser um passo concreto que o ouvinte pode dar durante a semana.]</p>
-
-<h4><i><b>Ponto 3:</b></i></h4>
-<p><i>Afirmação:</i> [Formule uma afirmação clara e memorável para cada ponto.]</p>
-<p>[Para cada ponto, desenvolva uma explicação exegética (explicando o significado do texto em seu contexto) e teológica clara. A aplicação prática deve ser um passo concreto que o ouvinte pode dar durante a semana.]</p>
-
-<h3><strong>5. ILUSTRAÇÕES E ANALOGIAS SUGERIDAS</strong></h3>
-<ul><li><strong>Opção A:</strong> [Sugira uma ilustração que ilumine a verdade bíblica, sem ofuscá-la. Evite clichês.]</li><li><strong>Opção B:</strong> [Sugira uma segunda ilustração com uma abordagem diferente.]</li></ul>
-
-<h3><strong>6. PERGUNTAS PARA REFLEXÃO</strong></h3>
-<ol><li>[Elabore perguntas que levem à introspecção e aplicação pessoal.]</li></ol>
-
-<h3><strong>7. SUGESTÕES DE MÚSICAS DE LOUVOR</strong></h3>
-<ul><li>[Sugira músicas cujo tema se alinhe perfeitamente com a mensagem central.]</li></ul>
-
-<h3><strong>8. APLICAÇÃO PRÁTICA E CONCLUSÃO FINAL</strong></h3>
-<p>[Construa uma conclusão que recapitule os pontos principais de forma poderosa e termine com um apelo claro e inspirador, alinhado ao propósito inicial do sermão.]</p>
-`;
+        // Cadastro
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            authError.textContent = '';
             try {
-                const sermonText = await callGeminiAPI(prompt);
-                sermonData.esboco = sermonText;
-                
-                document.getElementById('main-content').classList.add('hidden');
-                document.getElementById('results-container').classList.remove('hidden');
-                document.getElementById('results-content').innerHTML = buildSelectionSummary() + sermonData.esboco;
+                await createUserWithEmailAndPassword(auth, email, password);
+                // O onAuthStateChanged vai cuidar de redirecionar
             } catch (error) {
-                handleError(error);
-            } finally {
-                showLoading(false);
+                authError.textContent = "Erro ao criar conta: " + error.message;
             }
-        }
+        });
 
-        async function callGeminiFeature(type) {
-            if (!sermonData.esboco) {
-                console.error("Esboço principal não foi gerado ainda.");
-                return;
-            }
-            showLoading(true);
-            let prompt = '';
-            let modalTitle = '';
-            const baseTextMatch = sermonData.esboco.match(/<h3><strong>2\. TEXTO BASE SUGERIDO<\/strong><\/h3>\s*<p>(.*?)<\/p>/);
-            const baseText = baseTextMatch ? baseTextMatch[1] : 'não especificado';
-
-            if (type === 'deepen') {
-                modalTitle = 'Aprofundamento Teológico';
-                // ⭐ PROMPT APRIMORADO (SIMPLIFICADO) PARA APROFUNDAMENTO
-                prompt = `Aja como um pastor e professor de seminário, com o dom de tornar temas complexos em algo simples e fácil de entender. Sua tarefa é escrever um 'Aprofundamento do Tema' para o pastor que usará o PregaçãoFácil, com base no tema "${selections.subTheme}" e no texto de "${baseText}". O texto deve ser claro, direto e focado em fornecer insights práticos para a pregação, sem usar jargão acadêmico excessivo.
-
-**Estrutura da Análise:**
-
-<h3><strong>O CORAÇÃO DA PASSAGEM</strong></h3>
-<p>[Comece explicando, em poucas frases, qual é a ideia central e mais importante do texto base.]</p>
-
-<h3><strong>ENTENDENDO O CONTEXTO</strong></h3>
-<p>[De forma simples, explique o que estava acontecendo na época em que o texto foi escrito para ajudar a entender a intenção do autor.]</p>
-
-<h3><strong>PALAVRAS QUE ILUMINAM</strong></h3>
-<p>[Escolha 1 ou 2 palavras importantes e explique seu significado prático, sem uma análise linguística profunda.]</p>
-
-<h3><strong>A GRANDE VERDADE (DOUTRINA)</strong></h3>
-<p>[Conclua explicando qual grande verdade sobre Deus, Jesus ou a vida cristã este texto nos ensina de forma clara.]</p>
-
-Formate a resposta de forma didática, usando os títulos em HTML (h3 com strong) e parágrafos simples (p) como especificado.`;
-
-            } else if (type === 'illustrate') {
-                modalTitle = 'Nova Ilustração';
-                prompt = `Aja como um pastor criativo e sábio, buscando uma forma de conectar uma verdade profunda ao coração das pessoas.
-
-Crie uma ilustração (uma história, analogia ou exemplo do cotidiano) para um sermão sobre o tema: "${selections.subTheme}".
-
-**A ilustração deve obrigatoriamente:**
-a) Ser teologicamente fiel, sem simplificar demais ou distorcer a verdade bíblica.
-b) Ser original e evitar clichês evangélicos comuns (ex: "o cristão é como um bambu").
-c) Evocar uma resposta emocional apropriada (reflexão, convicção, esperança, etc.).
-d) Tornar a mensagem principal do sermão inesquecível.
-
-Apresente a ilustração de forma narrativa e pronta para ser contada. **É crucial que cada parágrafo da história esteja envolvido individualmente em suas próprias tags HTML &lt;p&gt; e &lt;/p&gt; para garantir o espaçamento correto entre eles.**`;
-            }
-
+        // Login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            authError.textContent = '';
             try {
-                let contentText = await callGeminiAPI(prompt);
-                 if (type === 'deepen') {
-                    // Limpeza final para garantir que parágrafos não fiquem em negrito
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = contentText;
-                    tempDiv.querySelectorAll('p').forEach(p => {
-                        p.querySelectorAll('strong').forEach(strongTag => {
-                            // Substitui a tag 'strong' pelo seu conteúdo, removendo o negrito.
-                            strongTag.outerHTML = strongTag.innerHTML; 
-                        });
-                    });
-                    contentText = tempDiv.innerHTML;
-
-                    sermonData.aprofundamento = contentText;
-                    document.getElementById('deepen-btn').querySelector('span').textContent = '✅ Aprofundamento Gerado';
-                    document.getElementById('deepen-btn').classList.replace('bg-purple-600', 'bg-green-600');
-                } else if (type === 'illustrate') {
-                    // Garante a formatação em parágrafos, mesmo que a IA retorne texto simples.
-                    if (!contentText.trim().includes('<p>')) {
-                        contentText = contentText
-                            .trim()
-                            .split(/\n\s*\n/) // Divide por parágrafos (uma ou mais linhas em branco)
-                            .map(p => `<p>${p.trim()}</p>`)
-                            .join('');
-                    }
-                    sermonData.ilustracao = contentText;
-                    document.getElementById('illustrate-btn').querySelector('span').textContent = '✅ Ilustração Gerada';
-                    document.getElementById('illustrate-btn').classList.replace('bg-teal-500', 'bg-green-600');
-                }
-                showModal(modalTitle, contentText);
+                await signInWithEmailAndPassword(auth, email, password);
+                 // O onAuthStateChanged vai cuidar de redirecionar
             } catch (error) {
-                handleError(error);
-            } finally {
-                showLoading(false);
+                authError.textContent = "Erro ao entrar: " + error.message;
             }
-        }
+        });
 
-        function showLoading(isLoading) {
-            document.getElementById('loading-overlay').classList.toggle('visible', isLoading);
-        }
-
-        function showModal(title, content) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-content').innerHTML = content;
-            document.getElementById('modal-overlay').classList.add('visible');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('visible');
-        }
-
-        function displayMainError(message) {
-            const errorContainer = document.getElementById('main-error-message');
-            const errorText = document.getElementById('main-error-text');
-            if(errorContainer && errorText) {
-                errorText.textContent = message;
-                errorContainer.classList.remove('hidden');
-            }
-        }
-
-        function hideMainError() {
-            const errorContainer = document.getElementById('main-error-message');
-            if(errorContainer) {
-                errorContainer.classList.add('hidden');
-            }
-        }
-
-        function handleError(error) {
-            console.error('Error:', error);
-            showLoading(false);
-            displayMainError(error.message || "Ocorreu um erro desconhecido. Verifique o console para mais detalhes.");
-        }
-
-        function resetApp() {
-            Object.keys(selections).forEach(key => selections[key] = null);
-            sermonData = { esboco: null, aprofundamento: null, ilustracao: null };
-            
-            document.getElementById('results-container').classList.add('hidden');
-            document.getElementById('results-content').innerHTML = '';
-            document.getElementById('main-content').classList.remove('hidden');
-            
-            document.querySelectorAll('.step-container').forEach(el => el.classList.add('hidden'));
-            document.getElementById('step-1').classList.remove('hidden');
-            document.getElementById('generate-button-container').classList.add('hidden');
-            hideMainError();
-            
-            // Reset Gemini feature buttons
-            document.getElementById('deepen-btn').querySelector('span').textContent = '✨ Aprofundar Tema';
-            document.getElementById('deepen-btn').classList.replace('bg-green-600', 'bg-purple-600');
-            document.getElementById('illustrate-btn').querySelector('span').textContent = '✨ Criar Ilustração';
-            document.getElementById('illustrate-btn').classList.replace('bg-green-600', 'bg-teal-500');
-        }
-
-        function buildSelectionSummary() {
-            let selectionParts = [selections.purpose.toUpperCase()];
-            if (selections.celebrationCategory) selectionParts.push(selections.celebrationCategory);
-            if (selections.celebration) selectionParts.push(selections.celebration);
-            if (selections.areaCategory) selectionParts.push(selections.areaCategory);
-            if (selections.area) selectionParts.push(selections.area);
-            if (selections.themeCategory) selectionParts.push(selections.themeCategory);
-            if (selections.theme) selectionParts.push(selections.theme);
-            if (selections.subTheme) selectionParts.push(selections.subTheme);
-            return `<div class="bg-blue-50 p-4 rounded-lg mb-6"><p class="font-semibold text-blue-800">Opções Selecionadas:</p><p class="text-gray-600">${selectionParts.join(' > ')}.</p></div>`;
-        }
-        
-        function htmlToPlainText(htmlString) {
-            if (!htmlString) return "";
-
-            let text = htmlString;
-
-            // Adiciona duas quebras de linha para criar espaçamento após os blocos
-            text = text.replace(/<\/p>|<\/h3>|<\/h4>|<\/div>|<\/ul>|<\/ol>/gi, '\n\n');
-            // Adiciona o marcador para itens de lista
-            text = text.replace(/<li>/gi, '- ');
-            // Substitui <br> por uma quebra de linha simples
-            text = text.replace(/<br\s*\/?>/gi, '\n');
-
-            // Remove todas as tags HTML restantes
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = text;
-            let plainText = tempDiv.textContent || tempDiv.innerText || "";
-            
-            // Limpeza final para garantir formatação consistente
-            // Remove espaços em branco no início e no fim de todo o texto
-            plainText = plainText.trim();
-            // Substitui 3 ou mais quebras de linha por exatamente duas (uma linha em branco)
-            plainText = plainText.replace(/(\r\n|\n|\r){3,}/g, "\n\n");
-            // Remove espaços vazios no início de cada linha (importante para listas)
-            plainText = plainText.replace(/^\s+/gm, '');
-
-            return plainText;
-        }
-
-        function copyToClipboard(htmlToCopy, buttonEl) {
-            const text = htmlToPlainText(htmlToCopy);
-            if (!text) return;
-            const originalText = buttonEl.innerHTML;
-            
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
+        // Logout
+        logoutBtn.addEventListener('click', async () => {
             try {
-                document.execCommand('copy');
-                buttonEl.innerHTML = 'Copiado!';
-                setTimeout(() => {
-                    buttonEl.innerHTML = originalText;
-                }, 2000);
-            } catch (err) {
-                console.error('Falha ao copiar:', err);
-                buttonEl.innerHTML = 'Erro ao copiar';
-                 setTimeout(() => {
-                    buttonEl.innerHTML = originalText;
-                }, 2000);
+                await signOut(auth);
+            } catch (error) {
+                console.error("Erro ao sair:", error);
             }
-            document.body.removeChild(textarea);
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Referências dos botões de cópia
-            const copyEsbocoBtn = document.getElementById('copy-esboco-btn');
-            const copyModalBtn = document.getElementById('copy-modal-btn');
-
-            // Event Listeners
-            document.getElementById('generate-btn').addEventListener('click', generateSermon);
-            document.getElementById('deepen-btn').addEventListener('click', () => callGeminiFeature('deepen'));
-            document.getElementById('illustrate-btn').addEventListener('click', () => callGeminiFeature('illustrate'));
-            document.getElementById('reset-btn').addEventListener('click', resetApp);
-            document.getElementById('close-modal-btn').addEventListener('click', () => closeModal('modal-overlay'));
-            document.getElementById('back-from-step2').addEventListener('click', handleBackFromStep2);
-
-            // Event listener para o botão de copiar esboço
-            copyEsbocoBtn.addEventListener('click', (e) => {
-                const esbocoContent = buildSelectionSummary() + sermonData.esboco;
-                copyToClipboard(esbocoContent, e.currentTarget);
-            });
-
-            // Event listener para o botão de copiar do modal
-            copyModalBtn.addEventListener('click', (e) => {
-                const modalContent = document.getElementById('modal-content').innerHTML;
-                copyToClipboard(modalContent, e.currentTarget);
-            });
-
-            document.getElementById('main-content').addEventListener('click', (e) => {
-                const card = e.target.closest('.step-card');
-                const backBtn = e.target.closest('.back-btn');
-
-                if (card) {
-                    const action = card.dataset.action;
-                    const value = card.dataset.value;
-                    const type = card.dataset.type;
-
-                    if(action === 'select') {
-                        selectOption(type, value);
-                    } else if (action === 'show-celebration-options') {
-                        showCelebrationOptions(value);
-                    } else if (action === 'show-area-options') {
-                        showAreaOptions(value);
-                    } else if (action === 'show-theme-options') {
-                        showThemeOptions(value);
-                    } else if (action === 'show-subthemes') {
-                        showSubThemes(value);
-                    } else if (action === 'select-subtheme') {
-                        selections.subTheme = value;
-                        showStep('generate-button-container');
-                    }
-                }
-                if (backBtn) {
-                    showStep(backBtn.dataset.target);
-                }
-            });
         });
     </script>
+
+    <script>
+        // Lógica do Aplicativo Principal (PregaçãoFácil)
+        // (Todo o código anterior do PregaçãoFácil vem aqui)
+        const selections = { purpose: null, celebrationCategory: null, celebration: null, areaCategory: null, area: null, themeCategory: null, theme: null, subTheme: null };
+        let sermonData = { esboco: null, aprofundamento: null, ilustracao: null };
+        const celebrationData = { 'calendario': { title: 'Calendário Cristão', options: ['Páscoa', 'Natal', 'Pentecostes', 'Ano Novo', 'Domingo de Ramos', 'Sexta-feira Santa'] }, 'vidaIgreja': { title: 'Vida da Igreja', options: ['Aniversário da Igreja', 'Batismos', 'Santa Ceia', 'Apresentação de Crianças', 'Culto de Missões', 'Consagração de Líderes'] }, 'eventosEspeciais': { title: 'Datas e Eventos Especiais', options: ['Dia das Mães', 'Dia dos Pais', 'Dia da Bíblia', 'Ação de Graças', 'Dia do Pastor', 'Casamento', 'Aniversário', 'Formatura', 'Velório'] } };
+        const areaData = { 'grupos': { title: 'Grupos Específicos (Público-Alvo)', options: ['Congregação Geral', 'Família', 'Casais', 'Homens', 'Mulheres', 'Jovens', 'Adolescentes', 'Líderes e Obreiros'] }, 'areas': { title: 'Áreas da Vida (Contexto)', options: ['Vida Espiritual', 'Vida Profissional', 'Finanças', 'Saúde Emocional', 'Relacionamentos', 'Casamento e Lar', 'Desafios Pessoais'] } };
+        const themeData = { 'teologicos': { title: 'Temas Teológicos', themes: ['Fé', 'Graça', 'Amor', 'Perdão', 'Esperança', 'Salvação', 'A Pessoa de Jesus', 'O Espírito Santo', 'Santidade', 'A Palavra de Deus', 'A Igreja', 'Soberania de Deus'] }, 'praticos': { title: 'Temas da Vida Cristã', themes: ['Oração e Intimidade', 'Serviço e Humildade', 'Adoração', 'Contentamento', 'Mordomia e Generosidade', 'Comunhão', 'Testemunho', 'Sabedoria'] }, 'desafios': { title: 'Desafios e Superação', themes: ['Superando o Medo e a Ansiedade', 'O Propósito do Sofrimento', 'Restauração e Novos Começos', 'Lidando com a Tentação', 'Dúvida', 'Ira e Amargura', 'Orgulho', 'Solidão'] } };
+        const subThemesData = { 'Fé': ['A natureza da fé bíblica', 'Fé em tempos de dúvida', 'A fé que move montanhas', 'Vivendo pela fé, não pela vista', 'A fé e as obras'], 'Graça': ['Vivendo na liberdade da graça', 'Graça vs. Merecimento', 'A graça que nos capacita', 'Crescendo na graça', 'Onde abundou o pecado, superabundou a graça'], 'Amor': ['O amor Ágape: o padrão divino', 'O amor como a marca do discípulo', 'Amando os inimigos', 'O amor de Deus como fundamento', 'O amor sacrificial'], 'Perdão': ['O poder libertador do perdão', 'Perdoar como fomos perdoados', 'A dificuldade de perdoar a si mesmo', 'As consequências da falta de perdão', 'A cura através do perdão'], 'Esperança': ['A viva esperança da ressurreição', 'Esperança em meio ao caos', 'A esperança da volta de Cristo', 'A esperança como âncora da alma', 'Alegria na esperança'], 'Salvação': ['Justificação, Santificação e Glorificação', 'A segurança da salvação', 'As implicações da salvação hoje', 'Salvação somente pela fé', 'O custo do discipulado'], 'Santidade': ['O chamado à santidade', 'Santidade como separação para Deus', 'Santidade prática no dia a dia', 'A santidade como um processo contínuo', 'Buscai a paz e a santificação'], 'A Pessoa de Jesus': ['A divindade e humanidade de Cristo', 'Os nomes e títulos de Jesus', 'A supremacia de Cristo', 'O significado da cruz e ressurreição', 'Os "Eu Sou" de Jesus'], 'O Espírito Santo': ['Quem é o Espírito Santo?', 'O Fruto do Espírito', 'Os Dons do Espírito', 'Andando e vivendo no Espírito', 'O selo do Espírito'], 'A Palavra de Deus': ['A inspiração e inerrância das Escrituras', 'A Bíblia como nosso guia', 'Como estudar a Bíblia', 'O poder transformador da Palavra', 'Meditando na Lei do Senhor'], 'A Igreja': ['A natureza e missão da Igreja', 'A Igreja como corpo de Cristo', 'A importância da comunhão', 'As ordenanças: Batismo e Santa Ceia', 'A noiva de Cristo'], 'Soberania de Deus': ['O controle de Deus sobre todas as coisas', 'Confiança na soberania divina', 'Soberania de Deus e responsabilidade humana', 'Descansando no plano soberano de Deus'], 'Oração e Intimidade': ['O poder da oração persistente', 'Como ouvir a voz de Deus', 'Superando a dificuldade de orar', 'A oração do Pai Nosso', 'A oração intercessória'], 'Serviço e Humildade': ['O coração de servo', 'Servindo com os dons', 'O perigo do orgulho', 'Encontrando grandeza no serviço', 'Lavando os pés uns dos outros'], 'Adoração': ['O que é verdadeira adoração?', 'Adoração em espírito e em verdade', 'Um estilo de vida de adoração', 'A adoração como arma espiritual', 'Adoração em meio às provações'], 'Contentamento': ['O segredo do contentamento', 'Vencendo a inveja e o materialismo', 'A gratidão como chave', 'Contentamento vs. Acomodação'], 'Mordomia e Generosidade': ['Administrando tempo, talentos e tesouros', 'A alegria de um coração generoso', 'O princípio da semeadura e colheita', 'Fidelidade no pouco e no muito'], 'Comunhão': ['A importância vital de congregar', 'Carregando as cargas uns dos outros', 'A unidade do corpo de Cristo', 'A hospitalidade como expressão de comunhão'], 'Testemunho': ['Sendo sal e luz no mundo', 'Como compartilhar sua história de fé', 'Vivendo um evangelho que atrai', 'O testemunho através das ações'], 'Sabedoria': ['Buscando a sabedoria do alto', 'Sabedoria humana vs. divina', 'Tomando decisões sábias', 'O temor do Senhor como princípio'], 'Superando o Medo e a Ansiedade': ['Trocando o medo pela fé', 'A paz de Deus', 'Lançando sobre Ele toda a ansiedade', 'Não temas: a ordem mais repetida'], 'O Propósito do Sofrimento': ['Onde está Deus na dor', 'Crescimento na provação', 'O sofrimento produzindo perseverança', 'O testemunho através do sofrimento'], 'Restauração e Novos Começos': ['Deus de segundas chances', 'Deixando o passado para trás', 'A beleza das cinzas', 'Restaurando relacionamentos', 'A restauração da alegria'], 'Lidando com a Tentação': ['As rotas de fuga de Deus', 'Vencendo o pecado pela Palavra', 'A batalha da mente', 'Identificando as fontes da tentação'], 'Dúvida': ['Navegando crises de fé', 'A fé que questiona e busca', 'Encontrando segurança em Deus', 'Honestidade com Deus na dúvida'], 'Ira e Amargura': ['O perigo de guardar rancor', 'Entregando a ira a Deus', 'O caminho para a paz interior', '"Não se ponha o sol sobre a vossa ira"'], 'Orgulho': ['A raiz de muitos pecados', 'A humildade como antídoto', 'Reconhecendo o orgulho em nós', 'O exemplo de humildade de Cristo'], 'Solidão': ['A presença constante de Deus', 'Encontrando família na igreja', 'Superando o sentimento de isolamento', 'A solidão como lugar de encontro com Deus'] };
+        const API_KEY = "AIzaSyBg7JKdImrnowHk9FDCvVU7omfXzxsJN8w";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+        async function callGeminiAPI(prompt) { const payload = { contents: [{ parts: [{ text: prompt }] }] }; const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error.message || `Erro ${response.status}`); } const data = await response.json(); if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts) { return data.candidates[0].content.parts[0].text; } else { console.error("Invalid response structure from API:", data); throw new Error("A resposta da API não contém o conteúdo esperado."); } }
+        function showStep(stepId) { document.querySelectorAll('.step-container').forEach(el => el.classList.add('hidden')); document.getElementById(stepId).classList.remove('hidden'); }
+        function handleBackFromStep2() { if (selections.purpose === 'Celebração (Ocasional)') { showStep('step-1-1'); } else { showStep('step-1'); } }
+        function selectOption(type, value) { selections[type] = value; if (type === 'purpose') { if (value === 'Celebração (Ocasional)') { showStep('step-1-1'); } else { selections.celebration = null; selections.celebrationCategory = null; showStep('step-2'); } } else if (type === 'celebration') { showStep('step-2'); } else if (type === 'area') { showStep('step-3'); } }
+        function showCelebrationOptions(categoryKey) { selections.celebrationCategory = celebrationData[categoryKey].title; const category = celebrationData[categoryKey]; const container = document.getElementById('step-1-2'); let html = `<h2 class="text-2xl font-semibold mb-6 text-center">Escolha uma opção para "${category.title}":</h2>`; html += '<div class="grid grid-cols-2 md:grid-cols-4 gap-4">'; category.options.forEach(option => { html += `<div class="step-card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-action="select" data-type="celebration" data-value="${option}">${option}</div>`; }); html += '</div>'; html += `<div class="text-center mt-6"><button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-1-1">Voltar</button></div>`; container.innerHTML = html; showStep('step-1-2'); }
+        function showAreaOptions(categoryKey) { selections.areaCategory = areaData[categoryKey].title; const category = areaData[categoryKey]; const container = document.getElementById('step-2-1'); let html = `<h2 class="text-2xl font-semibold mb-6 text-center">Escolha uma opção para "${category.title}":</h2>`; html += '<div class="grid grid-cols-2 md:grid-cols-4 gap-4">'; category.options.forEach(option => { html += `<div class="step-card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-action="select" data-type="area" data-value="${option}">${option}</div>`; }); html += '</div>'; html += `<div class="text-center mt-6"><button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-2">Voltar</button></div>`; container.innerHTML = html; showStep('step-2-1'); }
+        function showThemeOptions(categoryKey) { selections.themeCategory = themeData[categoryKey].title; const category = themeData[categoryKey]; const container = document.getElementById('step-3-1'); let html = `<h2 class="text-2xl font-semibold mb-6 text-center">Escolha um tema para "${category.title}":</h2>`; html += '<div class="grid grid-cols-2 md:grid-cols-4 gap-4">'; category.themes.forEach(theme => { html += `<div class="step-card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-action="show-subthemes" data-value="${theme}">${theme}</div>`; }); html += '</div>'; html += `<div class="text-center mt-6"><button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-3">Voltar</button></div>`; container.innerHTML = html; showStep('step-3-1'); }
+        function showSubThemes(mainTheme) { selections.theme = mainTheme; const subThemes = subThemesData[mainTheme]; const container = document.getElementById('step-3-2'); let html = `<h2 class="text-2xl font-semibold mb-6 text-center">Escolha um subtema para "${mainTheme}":</h2><div class="grid grid-cols-2 md:grid-cols-4 gap-4">`; subThemes.forEach(subTheme => { html += `<div class="step-card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-action="select-subtheme" data-value="${subTheme}">${subTheme}</div>`; }); html += `</div><div class="text-center mt-6"><button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-3-1">Voltar</button></div>`; container.innerHTML = html; showStep('step-3-2'); }
+        async function generateSermon() { hideMainError(); showLoading(true); let tone = "inspirador e claro"; if (selections.purpose.includes('Consolo')) { tone = "consolador, empático e esperançoso"; } else if (selections.purpose.includes('Exortação')) { tone = "desafiador, direto e motivador"; } else if (selections.purpose.includes('Evangelismo')) { tone = "convidativo, claro e focado na esperança"; } else if (selections.purpose.includes('Celebração')) { tone = "alegre, celebrativo e inspirador"; } const celebrationText = selections.celebration || 'Nenhuma'; const prompt = `Aja como um professor de homilética e teologia pastoral com décadas de experiência na formação de pregadores. Sua tarefa é criar um esboço de sermão para a plataforma PregaçãoFácil.\n\nA prioridade máxima é a fidelidade bíblica, a clareza expositiva e a aplicação prática relevante.\n\n**Parâmetros da Mensagem:**\n- **Propósito Homilético:** ${selections.purpose}\n- **Ocasião Especial (se aplicável):** ${celebrationText}\n- **Público-Alvo/Contexto:** ${selections.area}\n- **Tema Central:** ${selections.theme}\n- **Subtema Específico:** ${selections.subTheme}\n- **Tom da Mensagem:** ${tone}\n\n**Instruções de Estrutura (Siga ESTRITAMENTE):**\nO resultado deve ser em HTML, usando a seguinte estrutura. As instruções entre colchetes devem guiar o conteúdo:\n\n<h3><strong>1. TÍTULO SUGERIDO</strong></h3>\n<p>[Crie um título que seja ao mesmo tempo teologicamente rico e convidativo.]</p>\n\n<h3><strong>2. TEXTO BASE SUGERIDO</strong></h3>\n<p>[Sugira uma passagem central (texto âncora) que fundamente toda a mensagem. **Inclua a referência E o texto completo da passagem.**]</p>\n\n<h3><strong>3. VERSÍCULOS DE APOIO SUGERIDOS</strong></h3>\n<ul><li>[Liste 3 a 5 versículos que complementem e reforcem o texto base. **Para cada um, inclua a referência E o texto completo do versículo.**]</li></ul>\n\n<h3><strong>4. ESBOÇO DA PREGAÇÃO</strong></h3>\n<h4><i><b>Introdução:</b></i></h4>\n<p>[Crie uma introdução que conecte a realidade do ouvinte ao tema central da passagem, gerando interesse e necessidade pela mensagem.]</p>\n\n<h4><i><b>Ponto 1:</b></i></h4>\n<p><i>Afirmação:</i> [Formule uma afirmação clara e memorável para cada ponto.]</p>\n<p>[Para cada ponto, desenvolva uma explicação exegética (explicando o significado do texto em seu contexto) e teológica clara. A aplicação prática deve ser um passo concreto que o ouvinte pode dar durante a semana.]</p>\n\n<h4><i><b>Ponto 2:</b></i></h4>\n<p><i>Afirmação:</i> [Formule uma afirmação clara e memorável para cada ponto.]</p>\n<p>[Para cada ponto, desenvolva uma explicação exegética (explicando o significado do texto em seu contexto) e teológica clara. A aplicação prática deve ser um passo concreto que o ouvinte pode dar durante a semana.]</p>\n\n<h4><i><b>Ponto 3:</b></i></h4>\n<p><i>Afirmação:</i> [Formule uma afirmação clara e memorável para cada ponto.]</p>\n<p>[Para cada ponto, desenvolva uma explicação exegética (explicando o significado do texto em seu contexto) e teológica clara. A aplicação prática deve ser um passo concreto que o ouvinte pode dar durante a semana.]</p>\n\n<h3><strong>5. ILUSTRAÇÕES E ANALOGIAS SUGERIDAS</strong></h3>\n<ul><li><strong>Opção A:</strong> [Sugira uma ilustração que ilumine a verdade bíblica, sem ofuscá-la. Evite clichês.]</li><li><strong>Opção B:</strong> [Sugira uma segunda ilustração com uma abordagem diferente.]</li></ul>\n\n<h3><strong>6. PERGUNTAS PARA REFLEXÃO</strong></h3>\n<ol><li>[Elabore perguntas que levem à introspecção e aplicação pessoal.]</li></ol>\n\n<h3><strong>7. SUGESTÕES DE MÚSICAS DE LOUVOR</strong></h3>\n<ul><li>[Sugira músicas cujo tema se alinhe perfeitamente com a mensagem central.]</li></ul>\n\n<h3><strong>8. APLICAÇÃO PRÁTICA E CONCLUSÃO FINAL</strong></h3>\n<p>[Construa uma conclusão que recapitule os pontos principais de forma poderosa e termine com um apelo claro e inspirador, alinhado ao propósito inicial do sermão.]</p>\n`; try { const sermonText = await callGeminiAPI(prompt); sermonData.esboco = sermonText; document.getElementById('main-content').classList.add('hidden'); document.getElementById('results-container').classList.remove('hidden'); document.getElementById('results-content').innerHTML = buildSelectionSummary() + sermonData.esboco; } catch (error) { handleError(error); } finally { showLoading(false); } }
+        async function callGeminiFeature(type) { if (!sermonData.esboco) { console.error("Esboço principal não foi gerado ainda."); return; } showLoading(true); let prompt = ''; let modalTitle = ''; const baseTextMatch = sermonData.esboco.match(/<h3><strong>2\. TEXTO BASE SUGERIDO<\/strong><\/h3>\s*<p>(.*?)<\/p>/); const baseText = baseTextMatch ? baseTextMatch[1] : 'não especificado'; if (type === 'deepen') { modalTitle = 'Aprofundamento Teológico'; prompt = `Aja como um pastor e professor de seminário, com o dom de tornar temas complexos em algo simples e fácil de entender. Sua tarefa é escrever um 'Aprofundamento do Tema' para o pastor que usará o PregaçãoFácil, com base no tema "${selections.subTheme}" e no texto de "${baseText}". O texto deve ser claro, direto e focado em fornecer insights práticos para a pregação, sem usar jargão acadêmico excessivo.\n\n**Estrutura da Análise:**\n\n<h3><strong>O CORAÇÃO DA PASSAGEM</strong></h3>\n<p>[Comece explicando, em poucas frases, qual é a ideia central e mais importante do texto base.]</p>\n\n<h3><strong>ENTENDENDO O CONTEXTO</strong></h3>\n<p>[De forma simples, explique o que estava acontecendo na época em que o texto foi escrito para ajudar a entender a intenção do autor.]</p>\n\n<h3><strong>PALAVRAS QUE ILUMINAM</strong></h3>\n<p>[Escolha 1 ou 2 palavras importantes e explique seu significado prático, sem uma análise linguística profunda.]</p>\n\n<h3><strong>A GRANDE VERDADE (DOUTRINA)</strong></h3>\n<p>[Conclua explicando qual grande verdade sobre Deus, Jesus ou a vida cristã este texto nos ensina de forma clara.]</p>\n\nFormate a resposta de forma didática, usando os títulos em HTML (h3 com strong) e parágrafos simples (p) como especificado.`; } else if (type === 'illustrate') { modalTitle = 'Nova Ilustração'; prompt = `Aja como um pastor criativo e sábio, buscando uma forma de conectar uma verdade profunda ao coração das pessoas.\n\nCrie uma ilustração (uma história, analogia ou exemplo do cotidiano) para um sermão sobre o tema: "${selections.subTheme}".\n\n**A ilustração deve obrigatoriamente:**\na) Ser teologicamente fiel, sem simplificar demais ou distorcer a verdade bíblica.\nb) Ser original e evitar clichês evangélicos comuns (ex: "o cristão é como um bambu").\nc) Evocar uma resposta emocional apropriada (reflexão, convicção, esperança, etc.).\nd) Tornar a mensagem principal do sermão inesquecível.\n\nApresente a ilustração de forma narrativa e pronta para ser contada. **É crucial que cada parágrafo da história esteja envolvido individualmente em suas próprias tags HTML &lt;p&gt; e &lt;/p&gt; para garantir o espaçamento correto entre eles.**`; } try { let contentText = await callGeminiAPI(prompt); if (type === 'deepen') { const tempDiv = document.createElement('div'); tempDiv.innerHTML = contentText; tempDiv.querySelectorAll('p').forEach(p => { p.querySelectorAll('strong').forEach(strongTag => { strongTag.outerHTML = strongTag.innerHTML; }); }); contentText = tempDiv.innerHTML; sermonData.aprofundamento = contentText; document.getElementById('deepen-btn').querySelector('span').textContent = '✅ Aprofundamento Gerado'; document.getElementById('deepen-btn').classList.replace('bg-purple-600', 'bg-green-600'); } else if (type === 'illustrate') { if (!contentText.trim().includes('<p>')) { contentText = contentText.trim().split(/\n\s*\n/).map(p => `<p>${p.trim()}</p>`).join(''); } sermonData.ilustracao = contentText; document.getElementById('illustrate-btn').querySelector('span').textContent = '✅ Ilustração Gerada'; document.getElementById('illustrate-btn').classList.replace('bg-teal-500', 'bg-green-600'); } showModal(modalTitle, contentText); } catch (error) { handleError(error); } finally { showLoading(false); } }
+        function showLoading(isLoading) { document.getElementById('loading-overlay').classList.toggle('visible', isLoading); }
+        function showModal(title, content) { document.getElementById('modal-title').innerText = title; document.getElementById('modal-content').innerHTML = content; document.getElementById('modal-overlay').classList.add('visible'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('visible'); }
+        function displayMainError(message) { const errorContainer = document.getElementById('main-error-message'); const errorText = document.getElementById('main-error-text'); if(errorContainer && errorText) { errorText.textContent = message; errorContainer.classList.remove('hidden'); } }
+        function hideMainError() { const errorContainer = document.getElementById('main-error-message'); if(errorContainer) { errorContainer.classList.add('hidden'); } }
+        function handleError(error) { console.error('Error:', error); showLoading(false); displayMainError(error.message || "Ocorreu um erro desconhecido. Verifique o console para mais detalhes."); }
+        function resetApp() { Object.keys(selections).forEach(key => selections[key] = null); sermonData = { esboco: null, aprofundamento: null, ilustracao: null }; document.getElementById('results-container').classList.add('hidden'); document.getElementById('results-content').innerHTML = ''; document.getElementById('main-content').classList.remove('hidden'); document.querySelectorAll('.step-container').forEach(el => el.classList.add('hidden')); document.getElementById('step-1').classList.remove('hidden'); document.getElementById('generate-button-container').classList.add('hidden'); hideMainError(); document.getElementById('deepen-btn').querySelector('span').textContent = '✨ Aprofundar Tema'; document.getElementById('deepen-btn').classList.replace('bg-green-600', 'bg-purple-600'); document.getElementById('illustrate-btn').querySelector('span').textContent = '✨ Criar Ilustração'; document.getElementById('illustrate-btn').classList.replace('bg-green-600', 'bg-teal-500'); }
+        function buildSelectionSummary() { let selectionParts = [selections.purpose.toUpperCase()]; if (selections.celebrationCategory) selectionParts.push(selections.celebrationCategory); if (selections.celebration) selectionParts.push(selections.celebration); if (selections.areaCategory) selectionParts.push(selections.areaCategory); if (selections.area) selectionParts.push(selections.area); if (selections.themeCategory) selectionParts.push(selections.themeCategory); if (selections.theme) selectionParts.push(selections.theme); if (selections.subTheme) selectionParts.push(selections.subTheme); return `<div class="bg-blue-50 p-4 rounded-lg mb-6"><p class="font-semibold text-blue-800">Opções Selecionadas:</p><p class="text-gray-600">${selectionParts.join(' > ')}.</p></div>`; }
+        function htmlToPlainText(htmlString) { if (!htmlString) return ""; let text = htmlString; text = text.replace(/<\/p>|<\/h3>|<\/h4>|<\/div>|<\/ul>|<\/ol>/gi, '\n\n'); text = text.replace(/<li>/gi, '- '); text = text.replace(/<br\s*\/?>/gi, '\n'); const tempDiv = document.createElement('div'); tempDiv.innerHTML = text; let plainText = tempDiv.textContent || tempDiv.innerText || ""; plainText = plainText.trim(); plainText = plainText.replace(/(\r\n|\n|\r){3,}/g, "\n\n"); plainText = plainText.replace(/^\s+/gm, ''); return plainText; }
+        function copyToClipboard(htmlToCopy, buttonEl) { const text = htmlToPlainText(htmlToCopy); if (!text) return; const originalText = buttonEl.innerHTML; const textarea = document.createElement('textarea'); textarea.value = text; document.body.appendChild(textarea); textarea.select(); try { document.execCommand('copy'); buttonEl.innerHTML = 'Copiado!'; setTimeout(() => { buttonEl.innerHTML = originalText; }, 2000); } catch (err) { console.error('Falha ao copiar:', err); buttonEl.innerHTML = 'Erro ao copiar'; setTimeout(() => { buttonEl.innerHTML = originalText; }, 2000); } document.body.removeChild(textarea); }
+        document.addEventListener('DOMContentLoaded', function() { const copyEsbocoBtn = document.getElementById('copy-esboco-btn'); const copyModalBtn = document.getElementById('copy-modal-btn'); document.getElementById('generate-btn').addEventListener('click', generateSermon); document.getElementById('deepen-btn').addEventListener('click', () => callGeminiFeature('deepen')); document.getElementById('illustrate-btn').addEventListener('click', () => callGeminiFeature('illustrate')); document.getElementById('reset-btn').addEventListener('click', resetApp); document.getElementById('close-modal-btn').addEventListener('click', () => closeModal('modal-overlay')); document.getElementById('back-from-step2').addEventListener('click', handleBackFromStep2); copyEsbocoBtn.addEventListener('click', (e) => { const esbocoContent = buildSelectionSummary() + sermonData.esboco; copyToClipboard(esbocoContent, e.currentTarget); }); copyModalBtn.addEventListener('click', (e) => { const modalContent = document.getElementById('modal-content').innerHTML; copyToClipboard(modalContent, e.currentTarget); }); document.getElementById('main-content').addEventListener('click', (e) => { const card = e.target.closest('.step-card'); const backBtn = e.target.closest('.back-btn'); if (card) { const action = card.dataset.action; const value = card.dataset.value; const type = card.dataset.type; if(action === 'select') { selectOption(type, value); } else if (action === 'show-celebration-options') { showCelebrationOptions(value); } else if (action === 'show-area-options') { showAreaOptions(value); } else if (action === 'show-theme-options') { showThemeOptions(value); } else if (action === 'show-subthemes') { showSubThemes(value); } else if (action === 'select-subtheme') { selections.subTheme = value; showStep('generate-button-container'); } } if (backBtn) { showStep(backBtn.dataset.target); } }); });
+    </script>
     
-    <!-- Service Worker para habilitar a funcionalidade "Adicionar à Tela Inicial" (PWA) -->
+    <!-- Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register(
@@ -764,11 +300,3 @@ Apresente a ilustração de forma narrativa e pronta para ser contada. **É cruc
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
