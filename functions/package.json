@@ -1,0 +1,16 @@
+{
+  "name": "functions",
+  "version": "1.0.0",
+  "description": "Funcoes do PregacaoFacil",
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^11.9.0",
+    "firebase-functions": "^4.4.1",
+    "mercadopago": "^1.5.17"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "private": true
+}
+
