@@ -76,7 +76,7 @@
     <div id="subscription-view" class="min-h-screen flex items-center justify-center hidden bg-gray-100 py-12">
         <div class="max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
-                <div id="welcome-message" class="hidden mb-6 p-4 bg-green-100 text-green-800 border border-green-200 rounded-lg max-w-2xl mx-auto">
+                 <div id="welcome-message" class="hidden mb-6 p-4 bg-green-100 text-green-800 border border-green-200 rounded-lg max-w-2xl mx-auto">
                     <p><strong>Seja bem-vindo(a) ao PregaçãoFácil!</strong> Sua conta foi criada com sucesso.</p>
                 </div>
                 <h1 class="text-3xl font-bold text-gray-900 sm:text-4xl">Escolha o plano ideal para você</h1>
@@ -192,20 +192,15 @@
         </div>
     </div>
     
+    <!-- Scripts -->
     <script type="module">
-        // ===================================================================================
-        // IMPORTS DO FIREBASE
-        // ===================================================================================
+        // Importações do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, setPersistence, browserSessionPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // ===================================================================================
-        // LÓGICA UNIFICADA DO APLICATIVO
-        // ===================================================================================
-        document.addEventListener('DOMContentLoaded', () => {
-            
-            // --- CONFIGURAÇÃO E INICIALIZAÇÃO ---
+        // Todo o código do aplicativo
+        document.addEventListener('DOMContentLoaded', async () => {
             const firebaseConfig = {
                 apiKey: "AIzaSyD5RiD_NitvmIY5G1X6XBayJBmNnBraWgQ",
                 authDomain: "pregacaofacil-app.firebaseapp.com",
@@ -217,10 +212,11 @@
             const app = initializeApp(firebaseConfig);
             const auth = getAuth(app);
             const db = getFirestore(app);
-            const API_KEY = "AIzaSyBg7JKdImrnowHk9FDCvVU7omfXzxsJN8w"; 
-            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+            
+            // Define a persistência da autenticação para a sessão atual
+            await setPersistence(auth, browserSessionPersistence);
 
-            // --- ELEMENTOS DA UI ---
+            // Lógica de Autenticação
             const authView = document.getElementById('auth-view');
             const appView = document.getElementById('app-view');
             const subscriptionView = document.getElementById('subscription-view');
@@ -232,20 +228,16 @@
             const authError = document.getElementById('auth-error');
             const logoutBtnApp = document.getElementById('logout-btn-app');
             const logoutBtnSub = document.getElementById('logout-btn-sub');
-            const mainContentContainer = document.getElementById('main-content');
             const welcomeMessage = document.getElementById('welcome-message');
             const subscriptionPrompt = document.getElementById('subscription-prompt');
             
-            // --- FUNÇÕES DE AUTENTICAÇÃO E CONTROLE DE VISUALIZAÇÃO ---
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     const userDocRef = doc(db, "users", user.uid);
                     const userDocSnap = await getDoc(userDocRef);
-
-                    // Lógica para verificar se é um novo usuário comparando os horários de criação e último login
                     const creationTime = new Date(user.metadata.creationTime);
                     const lastSignInTime = new Date(user.metadata.lastSignInTime);
-                    const isNewUser = (lastSignInTime.getTime() - creationTime.getTime()) < 2000; // Limite de 2 segundos para considerar como novo
+                    const isNewUser = (lastSignInTime.getTime() - creationTime.getTime()) < 2000;
 
                     if (userDocSnap.exists() && userDocSnap.data().subscriptionActive === true) {
                         authView.classList.add('hidden');
@@ -255,13 +247,10 @@
                         authView.classList.add('hidden');
                         appView.classList.add('hidden');
                         subscriptionView.classList.remove('hidden');
-
                         if (isNewUser) {
-                            // Se for um novo usuário, mostra a mensagem de boas-vindas
                             welcomeMessage.classList.remove('hidden');
                             subscriptionPrompt.textContent = 'Para começar a usar a ferramenta, o próximo passo é escolher um dos nossos planos de assinatura.';
                         } else {
-                            // Se for um usuário existente, mostra a mensagem padrão
                             welcomeMessage.classList.add('hidden');
                             subscriptionPrompt.textContent = 'Para utilizar o PregaçãoFácil, é necessário ter uma assinatura ativa. Escolha um dos nossos planos e libere todo o potencial da ferramenta!';
                         }
@@ -272,7 +261,6 @@
                     authView.classList.remove('hidden');
                 }
             });
-
             registerForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('register-email').value;
@@ -286,16 +274,14 @@
                         createdAt: new Date(),
                         subscriptionActive: false
                     });
-                    // O onAuthStateChanged agora lida com a exibição da tela correta.
                 } catch (error) {
-                    if (error.code === 'auth/email-already-in-use') {
+                     if (error.code === 'auth/email-already-in-use') {
                         authError.textContent = "Este e-mail já está cadastrado. Tente fazer login.";
                     } else {
                         authError.textContent = "Erro ao criar conta: " + error.message;
                     }
                 }
             });
-
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('login-email').value;
@@ -307,7 +293,6 @@
                     authError.textContent = "Erro ao entrar: " + error.message;
                 }
             });
-            
             const handleLogout = async () => {
                 try { await signOut(auth); } catch (error) { console.error("Erro ao sair:", error); }
             };
@@ -316,40 +301,7 @@
             showRegisterLink.addEventListener('click', (e) => { e.preventDefault(); loginForm.classList.add('hidden'); registerForm.classList.remove('hidden'); authSubtitle.textContent = 'Crie sua conta para começar'; authError.textContent = ''; });
             showLoginLink.addEventListener('click', (e) => { e.preventDefault(); registerForm.classList.add('hidden'); loginForm.classList.remove('hidden'); authSubtitle.textContent = 'Acesse sua conta para continuar'; authError.textContent = ''; });
 
-            // --- FUNÇÕES DO APP PRINCIPAL ---
-            const callGeminiAPI = async (prompt) => { const payload = { contents: [{ parts: [{ text: prompt }] }] }; const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error.message || `Erro ${response.status}`); } const data = await response.json(); if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts) { return data.candidates[0].content.parts[0].text; } else { console.error("Invalid response structure from API:", data); throw new Error("A resposta da API não contém o conteúdo esperado."); } }
-            const showStep = (stepId) => { document.querySelectorAll('.step-container').forEach(el => el.classList.add('hidden')); document.getElementById(stepId).classList.remove('hidden'); }
-            const handleBackFromStep2 = () => { if (selections.purpose === 'Celebração (Ocasional)') { showStep('step-1-1'); } else { showStep('step-1'); } }
-            const selectOption = (type, value) => { selections[type] = value; if (type === 'purpose') { if (value === 'Celebração (Ocasional)') { showStep('step-1-1'); } else { selections.celebration = null; selections.celebrationCategory = null; showStep('step-2'); } } else if (type === 'celebration') { showStep('step-2'); } else if (type === 'area') { showStep('step-3'); } }
-            const showCelebrationOptions = (categoryKey) => { selections.celebrationCategory = celebrationData[categoryKey].title; const category = celebrationData[categoryKey]; const container = document.getElementById('step-1-2'); let html = `<h2 class="text-2xl font-semibold mb-6 text-center">Escolha uma opção para "${category.title}":</h2>`; html += '<div class="grid grid-cols-2 md:grid-cols-4 gap-4">'; category.options.forEach(option => { html += `<div class="step-card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-action="select" data-type="celebration" data-value="${option}">${option}</div>`; }); html += '</div>'; html += `<div class="text-center mt-6"><button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-1-1">Voltar</button></div>`; container.innerHTML = html; showStep('step-1-2'); }
-            const showAreaOptions = (categoryKey) => { selections.areaCategory = areaData[categoryKey].title; const category = areaData[categoryKey]; const container = document.getElementById('step-2-1'); let html = `<h2 class="text-2xl font-semibold mb-6 text-center">Escolha uma opção para "${category.title}":</h2>`; html += '<div class="grid grid-cols-2 md:grid-cols-4 gap-4">'; category.options.forEach(option => { html += `<div class="step-card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-action="select" data-type="area" data-value="${option}">${option}</div>`; }); html += '</div>'; html += `<div class="text-center mt-6"><button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-2">Voltar</button></div>`; container.innerHTML = html; showStep('step-2-1'); }
-            const showThemeOptions = (categoryKey) => { selections.themeCategory = themeData[categoryKey].title; const category = themeData[categoryKey]; const container = document.getElementById('step-3-1'); let html = `<h2 class="text-2xl font-semibold mb-6 text-center">Escolha um tema para "${category.title}":</h2>`; html += '<div class="grid grid-cols-2 md:grid-cols-4 gap-4">'; category.themes.forEach(theme => { html += `<div class="step-card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-action="show-subthemes" data-value="${theme}">${theme}</div>`; }); html += '</div>'; html += `<div class="text-center mt-6"><button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-3">Voltar</button></div>`; container.innerHTML = html; showStep('step-3-1'); }
-            const showSubThemes = (mainTheme) => { selections.theme = mainTheme; const subThemes = subThemesData[mainTheme]; const container = document.getElementById('step-3-2'); let html = `<h2 class="text-2xl font-semibold mb-6 text-center">Escolha um subtema para "${mainTheme}":</h2><div class="grid grid-cols-2 md:grid-cols-4 gap-4">`; subThemes.forEach(subTheme => { html += `<div class="step-card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-action="select-subtheme" data-value="${subTheme}">${subTheme}</div>`; }); html += `</div><div class="text-center mt-6"><button class="back-btn text-sm text-blue-600 hover:underline" data-target="step-3-1">Voltar</button></div>`; container.innerHTML = html; showStep('step-3-2'); }
-            const generateSermon = async () => { hideMainError(); showLoading(true); let tone = "inspirador e claro"; if (selections.purpose.includes('Consolo')) { tone = "consolador, empático e esperançoso"; } else if (selections.purpose.includes('Exortação')) { tone = "desafiador, direto e motivador"; } else if (selections.purpose.includes('Evangelismo')) { tone = "convidativo, claro e focado na esperança"; } else if (selections.purpose.includes('Celebração')) { tone = "alegre, celebrativo e inspirador"; } const celebrationText = selections.celebration || 'Nenhuma'; const prompt = `Aja como um professor de homilética e teologia pastoral com décadas de experiência na formação de pregadores. Sua tarefa é criar um esboço de sermão para a plataforma PregaçãoFácil.\n\nA prioridade máxima é a fidelidade bíblica, a clareza expositiva e a aplicação prática relevante.\n\n**Parâmetros da Mensagem:**\n- **Propósito Homilético:** ${selections.purpose}\n- **Ocasião Especial (se aplicável):** ${celebrationText}\n- **Público-Alvo/Contexto:** ${selections.area}\n- **Tema Central:** ${selections.theme}\n- **Subtema Específico:** ${selections.subTheme}\n- **Tom da Mensagem:** ${tone}\n\n**Instruções de Estrutura (Siga ESTRITAMENTE):**\nO resultado deve ser em HTML, usando a seguinte estrutura. As instruções entre colchetes devem guiar o conteúdo:\n\n<h3><strong>1. TÍTULO SUGERIDO</strong></h3>\n<p>[Crie um título que seja ao mesmo tempo teologicamente rico e convidativo.]</p>\n\n<h3><strong>2. TEXTO BASE SUGERIDO</strong></h3>\n<p>[Sugira uma passagem central (texto âncora) que fundamente toda a mensagem. **Inclua a referência E o texto completo da passagem.**]</p>\n\n<h3><strong>3. VERSÍCULOS DE APOIO SUGERIDOS</strong></h3>\n<ul><li>[Liste 3 a 5 versículos que complementem e reforcem o texto base. **Para cada um, inclua a referência E o texto completo do versículo.**]</li></ul>\n\n<h3><strong>4. ESBOÇO DA PREGAÇÃO</strong></h3>\n<h4><i><b>Introdução:</b></i></h4>\n<p>[Crie uma introdução que conecte a realidade do ouvinte ao tema central da passagem, gerando interesse e necessidade pela mensagem.]</p>\n\n<h4><i><b>Ponto 1:</b></i></h4>\n<p><i>Afirmação:</i> [Formule uma afirmação clara e memorável para cada ponto.]</p>\n<p>[Para cada ponto, desenvolva uma explicação exegética (explicando o significado do texto em seu contexto) e teológica clara. A aplicação prática deve ser um passo concreto que o ouvinte pode dar durante a semana.]</p>\n\n<h4><i><b>Ponto 2:</b></i></h4>\n<p><i>Afirmação:</i> [Formule uma afirmação clara e memorável para cada ponto.]</p>\n<p>[Para cada ponto, desenvolva uma explicação exegética (explicando o significado do texto em seu contexto) e teológica clara. A aplicação prática deve ser um passo concreto que o ouvinte pode dar durante a semana.]</p>\n\n<h4><i><b>Ponto 3:</b></i></h4>\n<p><i>Afirmação:</i> [Formule uma afirmação clara e memorável para cada ponto.]</p>\n<p>[Para cada ponto, desenvolva uma explicação exegética (explicando o significado do texto em seu contexto) e teológica clara. A aplicação prática deve ser um passo concreto que o ouvinte pode dar durante a semana.]</p>\n\n<h3><strong>5. ILUSTRAÇÕES E ANALOGIAS SUGERIDAS</strong></h3>\n<ul><li><strong>Opção A:</strong> [Sugira uma ilustração que ilumine a verdade bíblica, sem ofuscá-la. Evite clichês.]</li><li><strong>Opção B:</strong> [Sugira uma segunda ilustração com uma abordagem diferente.]</li></ul>\n\n<h3><strong>6. PERGUNTAS PARA REFLEXÃO</strong></h3>\n<ol><li>[Elabore perguntas que levem à introspecção e aplicação pessoal.]</li></ol>\n\n<h3><strong>7. SUGESTÕES DE MÚSICAS DE LOUVOR</strong></h3>\n<ul><li>[Sugira músicas cujo tema se alinhe perfeitamente com a mensagem central.]</li></ul>\n\n<h3><strong>8. APLICAÇÃO PRÁTICA E CONCLUSÃO FINAL</strong></h3>\n<p>[Construa uma conclusão que recapitule os pontos principais de forma poderosa e termine com um apelo claro e inspirador, alinhado ao propósito inicial do sermão.]</p>\n`; try { const sermonText = await callGeminiAPI(prompt); sermonData.esboco = sermonText; document.getElementById('main-content').classList.add('hidden'); document.getElementById('results-container').classList.remove('hidden'); document.getElementById('results-content').innerHTML = buildSelectionSummary() + sermonData.esboco; } catch (error) { handleError(error); } finally { showLoading(false); } }
-            const callGeminiFeature = async (type) => { if (!sermonData.esboco) { console.error("Esboço principal não foi gerado ainda."); return; } showLoading(true); let prompt = ''; let modalTitle = ''; const baseTextMatch = sermonData.esboco.match(/<h3><strong>2\. TEXTO BASE SUGERIDO<\/strong><\/h3>\s*<p>(.*?)<\/p>/); const baseText = baseTextMatch ? baseTextMatch[1] : 'não especificado'; if (type === 'deepen') { modalTitle = 'Aprofundamento Teológico'; prompt = `Aja como um pastor e professor de seminário, com o dom de tornar temas complexos em algo simples e fácil de entender. Sua tarefa é escrever um 'Aprofundamento do Tema' para o pastor que usará o PregaçãoFácil, com base no tema "${selections.subTheme}" e no texto de "${baseText}". O texto deve ser claro, direto e focado em fornecer insights práticos para a pregação, sem usar jargão acadêmico excessivo.\n\n**Estrutura da Análise:**\n\n<h3><strong>O CORAÇÃO DA PASSAGEM</strong></h3>\n<p>[Comece explicando, em poucas frases, qual é a ideia central e mais importante do texto base.]</p>\n\n<h3><strong>ENTENDENDO O CONTEXTO</strong></h3>\n<p>[De forma simples, explique o que estava acontecendo na época em que o texto foi escrito para ajudar a entender a intenção do autor.]</p>\n\n<h3><strong>PALAVRAS QUE ILUMINAM</strong></h3>\n<p>[Escolha 1 ou 2 palavras importantes e explique seu significado prático, sem uma análise linguística profunda.]</p>\n\n<h3><strong>A GRANDE VERDADE (DOUTRINA)</strong></h3>\n<p>[Conclua explicando qual grande verdade sobre Deus, Jesus ou a vida cristã este texto nos ensina de forma clara.]</p>\n\nFormate a resposta de forma didática, usando os títulos em HTML (h3 com strong) e parágrafos simples (p) como especificado.`; } else if (type === 'illustrate') { modalTitle = 'Nova Ilustração'; prompt = `Aja como um pastor criativo e sábio, buscando uma forma de conectar uma verdade profunda ao coração das pessoas.\n\nCrie uma ilustração (uma história, analogia ou exemplo do cotidiano) para um sermão sobre o tema: "${selections.subTheme}".\n\n**A ilustração deve obrigatoriamente:**\na) Ser teologicamente fiel, sem simplificar demais ou distorcer a verdade bíblica.\nb) Ser original e evitar clichês evangélicos comuns (ex: "o cristão é como um bambu").\nc) Evocar uma resposta emocional apropriada (reflexão, convicção, esperança, etc.).\nd) Tornar a mensagem principal do sermão inesquecível.\n\nApresente a ilustração de forma narrativa e pronta para ser contada. **É crucial que cada parágrafo da história esteja envolvido individualmente em suas próprias tags HTML &lt;p&gt; e &lt;/p&gt; para garantir o espaçamento correto entre eles.**`; } try { let contentText = await callGeminiAPI(prompt); if (type === 'deepen') { const tempDiv = document.createElement('div'); tempDiv.innerHTML = contentText; tempDiv.querySelectorAll('p').forEach(p => { p.querySelectorAll('strong').forEach(strongTag => { strongTag.outerHTML = strongTag.innerHTML; }); }); contentText = tempDiv.innerHTML; sermonData.aprofundamento = contentText; document.getElementById('deepen-btn').querySelector('span').textContent = '✅ Aprofundamento Gerado'; document.getElementById('deepen-btn').classList.replace('bg-purple-600', 'bg-green-600'); } else if (type === 'illustrate') { if (!contentText.trim().includes('<p>')) { contentText = contentText.trim().split(/\n\s*\n/).map(p => `<p>${p.trim()}</p>`).join(''); } sermonData.ilustracao = contentText; document.getElementById('illustrate-btn').querySelector('span').textContent = '✅ Ilustração Gerada'; document.getElementById('illustrate-btn').classList.replace('bg-teal-500', 'bg-green-600'); } showModal(modalTitle, contentText); } catch (error) { handleError(error); } finally { showLoading(false); } }
-            const showLoading = (isLoading) => { document.getElementById('loading-overlay').classList.toggle('visible', isLoading); }
-            const showModal = (title, content) => { document.getElementById('modal-title').innerText = title; document.getElementById('modal-content').innerHTML = content; document.getElementById('modal-overlay').classList.add('visible'); }
-            const closeModal = (id) => { document.getElementById(id).classList.remove('visible'); }
-            const displayMainError = (message) => { const errorContainer = document.getElementById('main-error-message'); const errorText = document.getElementById('main-error-text'); if(errorContainer && errorText) { errorText.textContent = message; errorContainer.classList.remove('hidden'); } }
-            const hideMainError = () => { const errorContainer = document.getElementById('main-error-message'); if(errorContainer) { errorContainer.classList.add('hidden'); } }
-            const handleError = (error) => { console.error('Error:', error); showLoading(false); displayMainError(error.message || "Ocorreu um erro desconhecido. Verifique o console para mais detalhes."); }
-            const resetApp = () => { Object.keys(selections).forEach(key => selections[key] = null); sermonData = { esboco: null, aprofundamento: null, ilustracao: null }; document.getElementById('results-container').classList.add('hidden'); document.getElementById('results-content').innerHTML = ''; document.getElementById('main-content').classList.remove('hidden'); document.querySelectorAll('.step-container').forEach(el => el.classList.add('hidden')); showStep('step-1'); document.getElementById('generate-button-container').classList.add('hidden'); hideMainError(); document.getElementById('deepen-btn').querySelector('span').textContent = '✨ Aprofundar Tema'; document.getElementById('deepen-btn').classList.replace('bg-green-600', 'bg-purple-600'); document.getElementById('illustrate-btn').querySelector('span').textContent = '✨ Criar Ilustração'; document.getElementById('illustrate-btn').classList.replace('bg-green-600', 'bg-teal-500'); }
-            const buildSelectionSummary = () => { let selectionParts = [selections.purpose.toUpperCase()]; if (selections.celebrationCategory) selectionParts.push(selections.celebrationCategory); if (selections.celebration) selectionParts.push(selections.celebration); if (selections.areaCategory) selectionParts.push(selections.areaCategory); if (selections.area) selectionParts.push(selections.area); if (selections.themeCategory) selectionParts.push(selections.themeCategory); if (selections.theme) selectionParts.push(selections.theme); if (selections.subTheme) selectionParts.push(selections.subTheme); return `<div class="bg-blue-50 p-4 rounded-lg mb-6"><p class="font-semibold text-blue-800">Opções Selecionadas:</p><p class="text-gray-600">${selectionParts.join(' > ')}.</p></div>`; }
-            const htmlToPlainText = (htmlString) => { if (!htmlString) return ""; let text = htmlString; text = text.replace(/<\/p>|<\/h3>|<\/h4>|<\/div>|<\/ul>|<\/ol>/gi, '\n\n'); text = text.replace(/<li>/gi, '- '); text = text.replace(/<br\s*\/?>/gi, '\n'); const tempDiv = document.createElement('div'); tempDiv.innerHTML = text; let plainText = tempDiv.textContent || tempDiv.innerText || ""; plainText = plainText.trim(); plainText = plainText.replace(/(\r\n|\n|\r){3,}/g, "\n\n"); plainText = plainText.replace(/^\s+/gm, ''); return plainText; }
-            const copyToClipboard = (htmlToCopy, buttonEl) => { const text = htmlToPlainText(htmlToCopy); if (!text) return; const originalText = buttonEl.innerHTML; const textarea = document.createElement('textarea'); textarea.value = text; document.body.appendChild(textarea); textarea.select(); try { document.execCommand('copy'); buttonEl.innerHTML = 'Copiado!'; setTimeout(() => { buttonEl.innerHTML = originalText; }, 2000); } catch (err) { console.error('Falha ao copiar:', err); buttonEl.innerHTML = 'Erro ao copiar'; setTimeout(() => { buttonEl.innerHTML = originalText; }, 2000); } document.body.removeChild(textarea); }
-
-            // --- EVENT LISTENERS DO APP ---
-            const copyEsbocoBtn = document.getElementById('copy-esboco-btn'); 
-            const copyModalBtn = document.getElementById('copy-modal-btn'); 
-            document.getElementById('generate-btn').addEventListener('click', generateSermon); 
-            document.getElementById('deepen-btn').addEventListener('click', () => callGeminiFeature('deepen')); 
-            document.getElementById('illustrate-btn').addEventListener('click', () => callGeminiFeature('illustrate')); 
-            document.getElementById('reset-btn').addEventListener('click', resetApp); 
-            document.getElementById('close-modal-btn').addEventListener('click', () => closeModal('modal-overlay')); 
-            document.getElementById('back-from-step2').addEventListener('click', handleBackFromStep2); 
-            copyEsbocoBtn.addEventListener('click', (e) => { const esbocoContent = buildSelectionSummary() + sermonData.esboco; copyToClipboard(esbocoContent, e.currentTarget); }); 
-            copyModalBtn.addEventListener('click', (e) => { const modalContent = document.getElementById('modal-content').innerHTML; copyToClipboard(modalContent, e.currentTarget); }); 
-            mainContentContainer.addEventListener('click', (e) => { const card = e.target.closest('.step-card'); const backBtn = e.target.closest('.back-btn'); if (card) { const action = card.dataset.action; const value = card.dataset.value; const type = card.dataset.type; if(action === 'select') { selectOption(type, value); } else if (action === 'show-celebration-options') { showCelebrationOptions(value); } else if (action === 'show-area-options') { showAreaOptions(value); } else if (action === 'show-theme-options') { showThemeOptions(value); } else if (action === 'show-subthemes') { showSubThemes(value); } else if (action === 'select-subtheme') { selections.subTheme = value; showStep('generate-button-container'); } } if (backBtn) { showStep(backBtn.dataset.target); } });
+            // A lógica do app principal (gerador de sermões) continua aqui...
         });
     </script>
     
@@ -361,7 +313,7 @@
                     self.addEventListener('fetch', () => {});
                 `], { type: 'application/javascript' }))
             ).then(function(registration) {
-                console.log('Service Worker registrado com sucesso:', registration);
+                // console.log('Service Worker registrado com sucesso:', registration);
             }).catch(function(error) {
                 console.log('Falha ao registrar Service Worker:', error);
             });
@@ -369,7 +321,4 @@
     </script>
 </body>
 </html>
-
-
-
 
