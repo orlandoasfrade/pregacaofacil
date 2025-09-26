@@ -47,23 +47,44 @@ exports.mercadoPagoWebhook = functions.region("southamerica-east1").https.onRequ
         try {
             const payment = await mercadopago.payment.findById(data.id);
             const userId = payment.body.external_reference;
-            
+            const preapprovalId = payment.body.preapproval_id; // ID da assinatura
+
             if (userId && payment.body.status === 'approved') {
                 const userRef = admin.firestore().collection('users').doc(userId);
                 await userRef.update({
                     subscriptionActive: true,
+                    subscriptionId: preapprovalId, // Guardamos o ID da assinatura
                     lastPaymentId: data.id,
-                    planId: payment.body.preapproval_plan_id
                 });
-                console.log(`Assinatura ativada para o usuário: ${userId}`);
+                console.log(`Assinatura ativada para o usuário: ${userId} com subscriptionId: ${preapprovalId}`);
             }
         } catch (error) {
-            console.error('Erro ao processar notificação do Mercado Pago:', error);
+            console.error('Erro ao processar notificação de pagamento:', error);
             res.status(500).send('Erro interno');
             return;
         }
     }
     
     res.status(200).send('Notificação recebida');
+});
+
+// FUNÇÃO 3: Gera o link para o portal de gerenciamento de assinaturas
+exports.getManagementLink = functions.region("southamerica-east1").https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError("unauthenticated", "Você precisa estar logado.");
+    }
+    const userId = context.auth.uid;
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+
+    if (!userDoc.exists || !userDoc.data().subscriptionId) {
+        throw new functions.https.HttpsError("not-found", "Nenhuma assinatura ativa encontrada para este usuário.");
+    }
+
+    const subscriptionId = userDoc.data().subscriptionId;
+    
+    // O Mercado Pago não tem um "portal do cliente" via API, então geramos um link para a seção de assinaturas do usuário
+    const managementLink = `https://www.mercadopago.com.br/subscriptions/detail/${subscriptionId}`;
+    
+    return { url: managementLink };
 });
 
