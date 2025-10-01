@@ -6,7 +6,7 @@ admin.initializeApp();
 
 // Configure o Mercado Pago com seu Access Token SECRETO
 mercadopago.configure({
-  access_token: "APP_USR-442684176139714-091217-300726c0d62d215bf4e53cb85532aa82-186666701",
+  access_token: "APP_USR-TEST-442684176139714-091217-1f49b7fa50cb572f3db1c8ed13bb08c6-186666701",
 });
 
 // FUNÇÃO 1: Cria o link de pagamento para o usuário
@@ -43,48 +43,33 @@ exports.createPaymentPreference = functions.region("southamerica-east1").https.o
 exports.mercadoPagoWebhook = functions.region("southamerica-east1").https.onRequest(async (req, res) => {
     const { type, data } = req.body;
 
+    // Focamos apenas em notificações do tipo 'payment'
     if (type === 'payment') {
         try {
+            // Buscamos os detalhes completos do pagamento no Mercado Pago
             const payment = await mercadopago.payment.findById(data.id);
             const userId = payment.body.external_reference;
-            const preapprovalId = payment.body.preapproval_id; // ID da assinatura
-
+            
+            // Se o pagamento foi aprovado e está associado a um usuário
             if (userId && payment.body.status === 'approved') {
                 const userRef = admin.firestore().collection('users').doc(userId);
+                
+                // Atualizamos o documento do usuário no Firestore para ativar a assinatura
                 await userRef.update({
                     subscriptionActive: true,
-                    subscriptionId: preapprovalId, // Guardamos o ID da assinatura
                     lastPaymentId: data.id,
+                    planId: payment.body.preapproval_plan_id || null 
                 });
-                console.log(`Assinatura ativada para o usuário: ${userId} com subscriptionId: ${preapprovalId}`);
+                console.log(`Assinatura ativada para o usuário: ${userId}`);
             }
         } catch (error) {
-            console.error('Erro ao processar notificação de pagamento:', error);
-            res.status(500).send('Erro interno');
+            console.error('Erro ao processar notificação do Mercado Pago:', error);
+            res.status(500).send('Erro interno ao processar notificação');
             return;
         }
     }
     
-    res.status(200).send('Notificação recebida');
-});
-
-// FUNÇÃO 3: Gera o link para o portal de gerenciamento de assinaturas
-exports.getManagementLink = functions.region("southamerica-east1").https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError("unauthenticated", "Você precisa estar logado.");
-    }
-    const userId = context.auth.uid;
-    const userDoc = await admin.firestore().collection('users').doc(userId).get();
-
-    if (!userDoc.exists || !userDoc.data().subscriptionId) {
-        throw new functions.https.HttpsError("not-found", "Nenhuma assinatura ativa encontrada para este usuário.");
-    }
-
-    const subscriptionId = userDoc.data().subscriptionId;
-    
-    // O Mercado Pago não tem um "portal do cliente" via API, então geramos um link para a seção de assinaturas do usuário
-    const managementLink = `https://www.mercadopago.com.br/subscriptions/detail/${subscriptionId}`;
-    
-    return { url: managementLink };
+    // Respondemos ao Mercado Pago para confirmar que recebemos a notificação
+    res.status(200).send('Notificação recebida com sucesso');
 });
 
