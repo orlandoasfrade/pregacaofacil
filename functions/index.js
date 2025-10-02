@@ -4,9 +4,9 @@ const admin = require("firebase-admin");
 
 admin.initializeApp();
 
-// Configure o Mercado Pago com seu Access Token SECRETO
+// Configure o Mercado Pago com seu Access Token de TESTE
 mercadopago.configure({
-  access_token: "APP_USR-TEST-442684176139714-091217-1f49b7fa50cb572f3db1c8ed13bb08c6-186666701",
+  access_token: "TEST-442684176139714-091217-1f49b7fa50cb572f3db1c8ed13bb08c6-186666701",
 });
 
 // FUNÇÃO 1: Cria o link de pagamento para o usuário
@@ -22,9 +22,9 @@ exports.createPaymentPreference = functions.region("southamerica-east1").https.o
     preapproval_plan_id: planId,
     payer: { email: userEmail },
     back_urls: {
-        success: "https://orlandoasfrade.github.io/pregacaofacil/",
-        failure: "https://orlandoasfrade.github.io/pregacaofacil/",
-        pending: "https://orlandoasfrade.github.io/pregacaofacil/",
+        success: "https://pregacaofacil.vercel.app/",
+        failure: "https://pregacaofacil.vercel.app/",
+        pending: "https://pregacaofacil.vercel.app/",
     },
     auto_return: "approved",
     external_reference: userId,
@@ -43,33 +43,28 @@ exports.createPaymentPreference = functions.region("southamerica-east1").https.o
 exports.mercadoPagoWebhook = functions.region("southamerica-east1").https.onRequest(async (req, res) => {
     const { type, data } = req.body;
 
-    // Focamos apenas em notificações do tipo 'payment'
     if (type === 'payment') {
         try {
-            // Buscamos os detalhes completos do pagamento no Mercado Pago
             const payment = await mercadopago.payment.findById(data.id);
             const userId = payment.body.external_reference;
-            
-            // Se o pagamento foi aprovado e está associado a um usuário
+            const preapprovalId = payment.body.preapproval_id; // ID da assinatura
+
             if (userId && payment.body.status === 'approved') {
                 const userRef = admin.firestore().collection('users').doc(userId);
-                
-                // Atualizamos o documento do usuário no Firestore para ativar a assinatura
                 await userRef.update({
                     subscriptionActive: true,
+                    subscriptionId: preapprovalId, // Guardamos o ID da assinatura
                     lastPaymentId: data.id,
-                    planId: payment.body.preapproval_plan_id || null 
                 });
-                console.log(`Assinatura ativada para o usuário: ${userId}`);
+                console.log(`Assinatura ativada para o usuário: ${userId} com subscriptionId: ${preapprovalId}`);
             }
         } catch (error) {
-            console.error('Erro ao processar notificação do Mercado Pago:', error);
-            res.status(500).send('Erro interno ao processar notificação');
+            console.error('Erro ao processar notificação de pagamento:', error);
+            res.status(500).send('Erro interno');
             return;
         }
     }
     
-    // Respondemos ao Mercado Pago para confirmar que recebemos a notificação
-    res.status(200).send('Notificação recebida com sucesso');
+    res.status(200).send('Notificação recebida');
 });
 
