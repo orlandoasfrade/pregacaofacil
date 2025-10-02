@@ -198,7 +198,27 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, setPersistence, browserSessionPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        // ... (resto do script)
+
+        // Todo o código do aplicativo
+        document.addEventListener('DOMContentLoaded', async () => {
+            const firebaseConfig = {
+                apiKey: "AIzaSyD5RiD_NitvmIY5G1X6XBayJBmNnBraWgQ",
+                authDomain: "pregacaofacil-app.firebaseapp.com",
+                projectId: "pregacaofacil-app",
+                storageBucket: "pregacaofacil-app.appspot.com",
+                messagingSenderId: "558411431322",
+                appId: "1:558411431322:web:3d8e2338bb3537345f4e23"
+            };
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            
+            // Define a persistência da autenticação para a sessão atual
+            await setPersistence(auth, browserSessionPersistence);
+
+            // Lógica de Autenticação e do App Principal...
+            // (Todo o código que já funciona vai aqui, unificado)
+        });
     </script>
     
     <!-- Service Worker -->
