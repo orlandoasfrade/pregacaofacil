@@ -42,25 +42,26 @@ exports.createPaymentPreference = functions.region("southamerica-east1").https.o
 // FUNÇÃO 2: Ouve as notificações do Mercado Pago (Webhook)
 exports.mercadoPagoWebhook = functions.region("southamerica-east1").https.onRequest(async (req, res) => {
     const { type, data } = req.body;
+    console.log("Webhook recebido:", req.body);
 
     if (type === 'payment') {
         try {
             const payment = await mercadopago.payment.findById(data.id);
             const userId = payment.body.external_reference;
-            const preapprovalId = payment.body.preapproval_id; // ID da assinatura
+            const subscriptionId = payment.body.order?.id; // Tentativa mais robusta de pegar o ID da assinatura
 
             if (userId && payment.body.status === 'approved') {
                 const userRef = admin.firestore().collection('users').doc(userId);
                 await userRef.update({
                     subscriptionActive: true,
-                    subscriptionId: preapprovalId, // Guardamos o ID da assinatura
+                    subscriptionId: subscriptionId || null, // Guarda o ID da assinatura se encontrado
                     lastPaymentId: data.id,
                 });
-                console.log(`Assinatura ativada para o usuário: ${userId} com subscriptionId: ${preapprovalId}`);
+                console.log(`Assinatura ativada para o usuário: ${userId} com subscriptionId: ${subscriptionId}`);
             }
         } catch (error) {
             console.error('Erro ao processar notificação de pagamento:', error);
-            res.status(500).send('Erro interno');
+            res.status(500).send('Erro interno ao processar notificação');
             return;
         }
     }
