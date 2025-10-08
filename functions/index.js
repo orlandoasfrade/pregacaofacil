@@ -6,7 +6,8 @@ admin.initializeApp();
 
 // Configure o Mercado Pago com seu Access Token de TESTE
 mercadopago.configure({
-  access_token: "TEST-442684176139714-091217-1f49b7fa50cb572f3db1c8ed13bb08c6-186666701",
+  access_token: process.env.MERCADOPAGO_ACCESS_TOKEN,
+  integrator_id: "dev_aa2d89add88111ebb2fb0242ac130004",
 });
 
 // FUNÇÃO 1: Cria o link de pagamento para o usuário
